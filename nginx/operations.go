@@ -41,7 +41,13 @@ func (h *handler) ApplyOperation(ctx context.Context, op string, id string, del 
 				hh.StreamErr(e, err)
 				return
 			}
-			h.config.SetKey(cfg.RunningMeshVersion, operations[op].Properties["version"])
+			err = h.config.SetKey(cfg.RunningMeshVersion, operations[op].Properties["version"])
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s Nginx service mesh", status)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
 			ee.Summary = fmt.Sprintf("Nginx service mesh %s successfully", status)
 			ee.Details = fmt.Sprintf("The Nginx service mesh is now %s.", status)
 			hh.StreamInfo(e)

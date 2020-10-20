@@ -23,6 +23,8 @@ func NewViper() (Handler, error) {
 
 	v.SetDefault("server", server)
 	v.SetDefault("mesh", mesh)
+	v.SetDefault("operations", operations)
+
 	err := v.WriteConfig()
 	if err != nil {
 		_, er := os.Create(fmt.Sprintf("%s/%s", filepath, filename))
@@ -37,9 +39,13 @@ func NewViper() (Handler, error) {
 }
 
 // SetKey sets a key value in viper
-func (v *Viper) SetKey(key string, value string) {
+func (v *Viper) SetKey(key string, value string) error {
 	v.instance.Set(key, value)
-	_ = v.instance.WriteConfig()
+	err := v.instance.WriteConfig()
+	if err != nil {
+		return ErrViper(err)
+	}
+	return nil
 }
 
 // GetKey gets a key value from viper
@@ -68,28 +74,21 @@ func (v *Viper) Server(result interface{}) error {
 }
 
 // MeshSpec provides mesh specific configuration
-func (v *Viper) MeshSpec(result interface{}) error {
-	err := v.instance.ReadInConfig()
+func (v *Viper) Mesh(result interface{}) error {
+	s, err := v.GetKey("mesh")
 	if err != nil {
 		return ErrViper(err)
 	}
-	return v.instance.Unmarshal(&result)
-}
 
-// MeshInstance provides mesh specific configuration
-func (v *Viper) MeshInstance(result interface{}) error {
-	err := v.instance.ReadInConfig()
-	if err != nil {
-		return ErrViper(err)
-	}
-	return v.instance.Unmarshal(&result)
+	return utils.Unmarshal(s, &result)
 }
 
 // Operations provides list of operations available
 func (v *Viper) Operations(result interface{}) error {
-	err := v.instance.ReadInConfig()
+	s, err := v.GetKey("operations")
 	if err != nil {
 		return ErrViper(err)
 	}
-	return v.instance.Unmarshal(&result)
+
+	return utils.Unmarshal(s, &result)
 }

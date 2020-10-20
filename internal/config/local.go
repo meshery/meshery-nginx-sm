@@ -22,8 +22,9 @@ func NewLocal() (Handler, error) {
 // -------------------------------------------Application config methods----------------------------------------------------------------
 
 // SetKey sets a key value in local store
-func (l *Local) SetKey(key string, value string) {
+func (l *Local) SetKey(key string, value string) error {
 	l.store[key] = value
+	return nil
 }
 
 // GetKey gets a key value from local store
@@ -47,23 +48,11 @@ func (l *Local) Server(result interface{}) error {
 }
 
 // MeshSpec provides mesh specific configuration
-func (l *Local) MeshSpec(result interface{}) error {
+func (l *Local) Mesh(result interface{}) error {
 	d := `{
 		"name":    "Nginx Service Mesh",
 		"status":  "not installed",
 		"version": "none"
-	}`
-	return utils.Unmarshal(d, result)
-}
-
-// MeshInstance provides mesh specific configuration
-func (l *Local) MeshInstance(result interface{}) error {
-	d := `{
-		"installmode": "flat",
-		"installplatform": "kubernetes",
-		"installzone": " ",
-		"mgmtaddr": "0.0.0.0:8000",
-		"nginxaddr": "5681"
 	}`
 	return utils.Unmarshal(d, result)
 }

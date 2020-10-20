@@ -38,7 +38,11 @@ func main() {
 	}
 	service := &grpc.Service{}
 	_ = cfg.Server(&service)
-	cfg.SetKey("kube-config-path", kubeConfigPath)
+	err = cfg.SetKey("kube-config-path", kubeConfigPath)
+	if err != nil {
+		log.Err("Cannot set kubeconfig path", err.Error())
+		os.Exit(1)
+	}
 
 	// // Initialize Tracing instance
 	// tracer, err := tracing.New(service.Name, service.TraceURL)

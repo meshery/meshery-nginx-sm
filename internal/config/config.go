@@ -4,7 +4,7 @@ package config
 type Handler interface {
 
 	// SetKey sets a key value in the config
-	SetKey(key string, value string)
+	SetKey(key string, value string) error
 
 	// GetKey gets a key value from the config
 	GetKey(key string) (string, error)
@@ -13,10 +13,7 @@ type Handler interface {
 	Server(result interface{}) error
 
 	// MeshSpec provides the mesh specific configuration
-	MeshSpec(result interface{}) error
-
-	// MeshInstance provides the mesh specific configuration
-	MeshInstance(result interface{}) error
+	Mesh(result interface{}) error
 
 	// Operations provides the list of operations available
 	Operations(result interface{}) error

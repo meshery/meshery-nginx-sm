@@ -4,7 +4,7 @@ const (
 	local = "local" // local is the key for local config
 
 	// Operation keys
-	InstallNginxLatest = "install-nginx-0.6.0" // InstallKuma is the key to install kuma
+	InstallNginxLatest = "install-nginx-060" // InstallNginxLatest is the key to install nginx
 
 	InstallSampleBookInfo = "install-sample-bookinfo" // InstallSampleBookInfo is the key to install sample bookinfo application
 

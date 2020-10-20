@@ -27,7 +27,7 @@ func (h *handler) installNginx(del bool, version string) (string, error) {
 	meshinstance := &MeshInstance{
 		InstallVersion: version,
 	}
-	err := h.config.MeshInstance(meshinstance)
+	err := h.config.Mesh(meshinstance)
 	if err != nil {
 		return status, ErrMeshConfig(err)
 	}
