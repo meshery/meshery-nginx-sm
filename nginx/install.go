@@ -8,16 +8,14 @@ import (
 
 // MeshInstance holds the information of the instance of the mesh
 type MeshInstance struct {
-	InstallMode     string `json:"installmode,omitempty"`
-	InstallPlatform string `json:"installplatform,omitempty"`
-	InstallZone     string `json:"installzone,omitempty"`
+	InstallRegistry string `json:"installregistry,omitempty"`
 	InstallVersion  string `json:"installversion,omitempty"`
 	MgmtAddr        string `json:"mgmtaddr,omitempty"`
 	Nginxaddr       string `json:"nginxaddr,omitempty"`
 }
 
 // CreateInstance installs and creates a mesh environment up and running
-func (h *handler) installNginx(del bool, version string) (string, error) {
+func (h *handler) installNginx(del bool, version string, registry string) (string, error) {
 	status := "installing"
 
 	if del {
@@ -25,7 +23,8 @@ func (h *handler) installNginx(del bool, version string) (string, error) {
 	}
 
 	meshinstance := &MeshInstance{
-		InstallVersion: version,
+		InstallVersion:  version,
+		InstallRegistry: registry,
 	}
 	err := h.config.Mesh(meshinstance)
 	if err != nil {
@@ -54,13 +53,13 @@ func (h *handler) installSampleApp(name string) (string, error) {
 // installMesh installs the mesh in the cluster or the target location
 func (m *MeshInstance) installUsingNginxctl(del bool) error {
 
-	Executable, err := exec.LookPath("./scripts/nginx/installer.sh")
+	Executable, err := exec.LookPath("./scripts/deploy.sh")
 	if err != nil {
 		return err
 	}
 
 	if del {
-		Executable, err = exec.LookPath("./scripts/nginx/delete.sh")
+		Executable, err = exec.LookPath("./scripts/delete.sh")
 		if err != nil {
 			return err
 		}
@@ -72,11 +71,10 @@ func (m *MeshInstance) installUsingNginxctl(del bool) error {
 		Stdout: os.Stdout,
 		Stderr: os.Stdout,
 	}
+
 	cmd.Env = append(os.Environ(),
-		fmt.Sprintf("NGINX_VERSION=%s", m.InstallVersion),
-		fmt.Sprintf("NGINX_MODE=%s", m.InstallMode),
-		fmt.Sprintf("NGINX_PLATFORM=%s", m.InstallPlatform),
-		fmt.Sprintf("NGINX_ZONE=%s", m.InstallZone),
+		fmt.Sprintf("NGINX_DOCKER_REGISTRY=%s", m.InstallRegistry),
+		fmt.Sprintf("NGINX_MESH_VER=%s", m.InstallVersion),
 	)
 
 	err = cmd.Start()

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/layer5io/meshery-nginx/internal/smi"
+	"github.com/layer5io/gokit/smi"
 )
 
 func (h *handler) validateSMIConformance(id string, version string) error {
@@ -18,7 +18,7 @@ func (h *handler) validateSMIConformance(id string, version string) error {
 	}
 
 	annotations := map[string]string{
-		"kuma.io/gateway": "enabled",
+		"injector.nsm.nginx.com/auto-inject": "true",
 	}
 
 	test, err := smi.New(context.TODO(), id, version, strings.ToLower(h.GetName()), h.kubeClient)

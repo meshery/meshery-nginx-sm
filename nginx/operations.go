@@ -35,7 +35,7 @@ func (h *handler) ApplyOperation(ctx context.Context, op string, id string, del 
 	switch op {
 	case cfg.InstallNginxLatest:
 		go func(hh *handler, ee *Event) {
-			if status, err := hh.installNginx(del, operations[op].Properties["version"]); err != nil {
+			if status, err := hh.installNginx(del, operations[op].Properties["version"], "layer5"); err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Nginx service mesh", status)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
