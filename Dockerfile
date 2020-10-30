@@ -12,8 +12,7 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.18.0/
 	chmod +x ./kubectl && \
 	mv ./kubectl /usr/local/bin/kubectl
 
-RUN mkdir ${HOME}/.meshery/nginx/ && \
-	mkdir /home/scripts/ && \
+RUN mkdir /home/scripts/ && \
 	mkdir -p ${HOME}/.kube/
 
 COPY --from=bd /go/src/github.com/layer5io/meshery-nginx/meshery-nginx /home/
