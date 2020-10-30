@@ -1,12 +1,12 @@
 <p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src="https://raw.githubusercontent.com/layer5io/layer5/master/assets/images/meshery/meshery-logo-tag-light-text-side.png"  width="70%" /></a><br /><br /></p>
 
-# Meshery Adapter for Kuma
+# NGINX Service Mesh
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-kuma.svg)](https://hub.docker.com/r/layer5/meshery-kuma)
-[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-nginx)](https://goreportcard.com/report/github.com/layer5io/meshery-nginx)
-[![Build Status](https://github.com/layer5io/meshery-nginx/workflows/Meshery-Kuma/badge.svg)](https://github.com/layer5io/meshery-nginx/actions)
-[![GitHub](https://img.shields.io/github/license/layer5io/meshery-kuma.svg)](https://github.com/layer5io/meshery-nginx/blob/master/LICENSE)
-[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-kuma/help%20wanted.svg)](https://github.com/layer5io/meshery-nginx/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-nginx-sm.svg)](https://hub.docker.com/r/layer5/meshery-nginx-sm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-nginx-sm)](https://goreportcard.com/report/github.com/layer5io/meshery-nginx-sm)
+[![Build Status](https://github.com/layer5io/meshery-nginx-sm/workflows/Meshery%20NGINX%20SM/badge.svg)](https://github.com/layer5io/meshery-nginx-sm/actions)
+[![GitHub](https://img.shields.io/github/license/layer5io/meshery-nginx-sm.svg)](https://github.com/layer5io/meshery-nginx-sm/blob/master/LICENSE)
+[![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-nginx-sm/help%20wanted.svg)](https://github.com/layer5io/meshery-nginx-sm/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery)
 [![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=layer5)
 [![Slack](http://slack.layer5.io/badge.svg)](http://slack.layer5.io)
@@ -49,9 +49,11 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 ## About Layer5
 
 **Community First**
+
 <p>The <a href="https://layer5.io">Layer5</a> community represents the largest collection of service mesh projects and their maintainers in the world.</p>
 
 **Open Source First**
+
 <p>We build projects to provide learning environments, deployment and operational best practices, performance benchmarks, create documentation, share networking opportunities, and more. Our shared commitment to the open source spirit pushes Layer5 projects forward.</p>
 
 **License**
