@@ -1,31 +1,80 @@
 package config
 
-// Handler is the handler interface for config
-type Handler interface {
+import (
+	"fmt"
+	"os"
+	"path"
 
-	// SetKey sets a key value in the config
-	SetKey(key string, value string) error
+	"github.com/layer5io/meshery-adapter-library/config"
+	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
+	"github.com/layer5io/meshkit/utils"
+)
 
-	// GetKey gets a key value from the config
-	GetKey(key string) (string, error)
+const (
+	NginxOperation = "Nginx"
+	Development    = "development"
+	Production     = "production"
+)
 
-	// Server provides the server specific configuration
-	Server(result interface{}) error
+var (
+	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
-	// MeshSpec provides the mesh specific configuration
-	Mesh(result interface{}) error
+	kubeconfigFilename = "kubeconfig"
+	kubeconfigFiletype = "yaml"
+	KubeconfigPath     = path.Join(configRootPath, fmt.Sprintf("%s.%s", kubeconfigFilename, kubeconfigFiletype))
+)
 
-	// Operations provides the list of operations available
-	Operations(result interface{}) error
+// New creates a new config instance
+func New(provider string) (config.Handler, error) {
+
+	// Default config
+	opts := configprovider.Options{}
+	environment := os.Getenv("MESHERY_ENV")
+	if len(environment) < 1 {
+		environment = Development
+	}
+
+	// Config environment
+	switch environment {
+	case Production:
+		opts = ProductionConfig
+	case Development:
+		opts = DevelopmentConfig
+	}
+
+	// Config provider
+	switch provider {
+	case configprovider.ViperKey:
+		return configprovider.NewViper(opts)
+	case configprovider.InMemKey:
+		return configprovider.NewInMem(opts)
+	}
+
+	return nil, ErrEmptyConfig
 }
 
-// New returns the interface of the config handler
-func New(name string) (Handler, error) {
-	switch name {
-	case "local":
-		return NewLocal()
-	case "viper":
-		return NewViper()
+func NewKubeconfigBuilder(provider string) (config.Handler, error) {
+
+	opts := configprovider.Options{}
+	environment := os.Getenv("MESHERY_ENV")
+	if len(environment) < 1 {
+		environment = Development
+	}
+
+	// Config environment
+	switch environment {
+	case Production:
+		opts.ProviderConfig = productionKubeConfig
+	case Development:
+		opts.ProviderConfig = developmentKubeConfig
+	}
+
+	// Config provider
+	switch provider {
+	case configprovider.ViperKey:
+		return configprovider.NewViper(opts)
+	case configprovider.InMemKey:
+		return configprovider.NewInMem(opts)
 	}
 	return nil, ErrEmptyConfig
 }

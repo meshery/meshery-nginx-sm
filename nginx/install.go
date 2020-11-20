@@ -1,95 +1,72 @@
 package nginx
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 	"os/exec"
+
+	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-adapter-library/status"
 )
 
-// MeshInstance holds the information of the instance of the mesh
-type MeshInstance struct {
-	InstallRegistry string `json:"installregistry,omitempty"`
-	InstallVersion  string `json:"installversion,omitempty"`
-	MgmtAddr        string `json:"mgmtaddr,omitempty"`
-	Nginxaddr       string `json:"nginxaddr,omitempty"`
-}
-
-// CreateInstance installs and creates a mesh environment up and running
-func (h *handler) installNginx(del bool, version string, registry string) (string, error) {
-	status := "installing"
-
+func (nginx *Nginx) installNginx(del bool, version string) (string, error) {
+	st := status.Installing
 	if del {
-		status = "removing"
+		st = status.Removing
 	}
 
-	meshinstance := &MeshInstance{
-		InstallVersion:  version,
-		InstallRegistry: registry,
-	}
-	err := h.config.Mesh(meshinstance)
+	err := nginx.Config.GetObject(adapter.MeshSpecKey, nginx)
 	if err != nil {
-		return status, ErrMeshConfig(err)
-	}
-
-	h.log.Info("Installing Nginx")
-	err = meshinstance.installUsingNginxctl(del)
-	if err != nil {
-		h.log.Err("Nginx installation failed", ErrInstallMesh(err).Error())
-		return status, ErrInstallMesh(err)
-	}
-	if del {
-		return "removed", nil
-	}
-
-	return "deployed", nil
-}
-
-// installSampleApp installs and creates a sample bookinfo application up and running
-func (h *handler) installSampleApp(name string) (string, error) {
-	// Needs implementation
-	return "deployed", nil
-}
-
-// installMesh installs the mesh in the cluster or the target location
-func (m *MeshInstance) installUsingNginxctl(del bool) error {
-
-	Executable, err := exec.LookPath("./scripts/deploy.sh")
-	if err != nil {
-		return err
+		return st, ErrMeshConfig(err)
 	}
 
 	if del {
-		Executable, err = exec.LookPath("./scripts/delete.sh")
-		if err != nil {
-			return err
-		}
+		err = nginx.runUninstallCmd()
+	} else {
+		err = nginx.runInstallCmd(version)
+	}
+	if err != nil {
+		nginx.Log.Error(ErrInstallNginx(err))
+		return st, ErrInstallNginx(err)
 	}
 
-	cmd := &exec.Cmd{
-		Path:   Executable,
-		Args:   []string{Executable},
-		Stdout: os.Stdout,
-		Stderr: os.Stdout,
+	if del {
+		return status.Removed, nil
 	}
+	return status.Installed, nil
+}
 
-	cmd.Env = append(os.Environ(),
-		fmt.Sprintf("NGINX_DOCKER_REGISTRY=%s", m.InstallRegistry),
-		fmt.Sprintf("NGINX_MESH_VER=%s", m.InstallVersion),
+func (nginx *Nginx) runInstallCmd(version string) error {
+	var er bytes.Buffer
+
+	cmd := exec.Command(
+		nginx.Executable,
+		"deploy",
+		fmt.Sprintf("--nginx-mesh-api-image \"%s/nginx-mesh-api:%s\"", nginx.DockerRegistry, version),
+		fmt.Sprintf("--nginx-mesh-sidecar-image \"%s/nginx-mesh-sidecar:%s\"", nginx.DockerRegistry, version),
+		fmt.Sprintf("--nginx-mesh-init-image \"%s/nginx-mesh-init:%s\"", nginx.DockerRegistry, version),
+		fmt.Sprintf("--nginx-mesh-metrics-image \"%s/nginx-mesh-metrics:%s\"", nginx.DockerRegistry, version),
 	)
+	cmd.Stderr = &er
 
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		return err
+	if err := cmd.Run(); err != nil {
+		return ErrExecDeploy(err, er.String())
 	}
 
 	return nil
 }
 
-func (m *MeshInstance) portForward() error {
-	// Needs implementation
+func (nginx *Nginx) runUninstallCmd() error {
+	var er bytes.Buffer
+
+	// Remove the service mesh from kubernetes
+	cmd := exec.Command(nginx.Executable, "remove", "-y")
+	cmd.Stderr = &er
+
+	if err := cmd.Run(); err != nil {
+		return ErrExecRemove(err, er.String())
+	}
+
+	// TODO: Remove sidecar proxy from deployments
 	return nil
 }

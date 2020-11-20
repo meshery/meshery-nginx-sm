@@ -2,113 +2,83 @@ package nginx
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 
-	"gopkg.in/yaml.v2"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/layer5io/gokit/logger"
-	"github.com/layer5io/gokit/models"
-	"github.com/layer5io/meshery-nginx/internal/config"
+	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-adapter-library/common"
+	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
+	"github.com/layer5io/meshery-adapter-library/status"
+	internalconfig "github.com/layer5io/meshery-nginx/internal/config"
+	"github.com/layer5io/meshkit/logger"
 )
 
-// Handler provides the methods supported by the adapter
-type Handler interface {
-	GetName() string
-	CreateInstance([]byte, string, *chan interface{}) error
-	ApplyOperation(context.Context, string, string, bool) error
-	ListOperations() (Operations, error)
+type Nginx struct {
+	adapter.Adapter // Type Embedded
 
-	StreamErr(*Event, error)
-	StreamInfo(*Event)
+	// DockerRegistry is the registry for
+	// nginx service mesh related images
+	DockerRegistry string
+
+	// Executable is the path where the
+	// nginx-meshctl is located
+	Executable string
 }
 
-// handler holds the dependencies for nginx-adapter
-type handler struct {
-	config  config.Handler
-	log     logger.Handler
-	channel *chan interface{}
-
-	kubeClient     *kubernetes.Clientset
-	kubeConfigPath string
-	smiChart       string
-}
-
-// New initializes email handler.
-func New(c config.Handler, l logger.Handler) Handler {
-	return &handler{
-		config: c,
-		log:    l,
+// New initializes nginx handler.
+func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) adapter.Handler {
+	return &Nginx{
+		Adapter: adapter.Adapter{
+			Config:            c,
+			Log:               l,
+			KubeconfigHandler: kc,
+		},
+		DockerRegistry: "layer5",
 	}
 }
 
-// newClient creates a new client
-func (h *handler) CreateInstance(kubeconfig []byte, contextName string, ch *chan interface{}) error {
+// ApplyOperation applies the operation on nginx
+func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 
-	var err error
-	h.channel = ch
-	h.kubeConfigPath = "/Users/abishekk/.kube/config"
-	// h.kubeConfigPath, err = h.config.GetKey("kube-config-path")
-	// if err != nil {
-	// 	return ErrClientConfig(err)
-	// }
-
-	config, err := h.clientConfig(kubeconfig, contextName)
-	if err != nil {
-		return ErrClientConfig(err)
-	}
-
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return ErrClientSet(err)
-	}
-
-	h.kubeClient = clientset
-
-	return nil
-}
-
-// configClient creates a config client
-func (h *handler) clientConfig(kubeconfig []byte, contextName string) (*rest.Config, error) {
-	if len(kubeconfig) > 0 {
-		ccfg, err := clientcmd.Load(kubeconfig)
-		if err != nil {
-			return nil, err
-		}
-		if contextName != "" {
-			ccfg.CurrentContext = contextName
-		}
-		err = writeKubeconfig(kubeconfig, contextName, h.kubeConfigPath)
-		if err != nil {
-			return nil, err
-		}
-		return clientcmd.NewDefaultClientConfig(*ccfg, &clientcmd.ConfigOverrides{}).ClientConfig()
-	}
-	return rest.InClusterConfig()
-}
-
-// writeKubeconfig creates kubeconfig in local container
-func writeKubeconfig(kubeconfig []byte, contextName string, path string) error {
-
-	yamlConfig := models.Kubeconfig{}
-	err := yaml.Unmarshal(kubeconfig, &yamlConfig)
+	operations := make(adapter.Operations, 0)
+	err := nginx.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
 	}
 
-	yamlConfig.CurrentContext = contextName
+	stat := status.Deploying
 
-	d, err := yaml.Marshal(yamlConfig)
-	if err != nil {
-		return err
+	e := &adapter.Event{
+		Operationid: opReq.OperationID,
+		Summary:     status.Deploying,
+		Details:     status.None,
 	}
 
-	err = ioutil.WriteFile(path, d, 0600)
-	if err != nil {
-		return err
+	switch opReq.OperationName {
+	case internalconfig.NginxOperation:
+		go func(hh *Nginx, ee *adapter.Event) {
+			version := string(operations[opReq.OperationName].Versions[0])
+			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version); err != nil {
+				e.Summary = fmt.Sprintf("Error while %s Nginx service mesh", stat)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Nginx service mesh %s successfully", stat)
+			ee.Details = fmt.Sprintf("The Nginx service mesh is now %s.", stat)
+			hh.StreamInfo(e)
+		}(nginx, e)
+	case common.SmiConformanceOperation:
+		go func(hh *Nginx, ee *adapter.Event) {
+			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
+				Ctx:  context.TODO(),
+				OpID: ee.Operationid,
+			})
+			if err != nil {
+				return
+			}
+		}(nginx, e)
+	default:
+		nginx.StreamErr(e, ErrOpInvalid)
 	}
 
 	return nil
