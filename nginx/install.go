@@ -37,19 +37,25 @@ func (nginx *Nginx) installNginx(del bool, version string) (string, error) {
 }
 
 func (nginx *Nginx) runInstallCmd(version string) error {
-	var er bytes.Buffer
+	var er, out bytes.Buffer
 
 	cmd := exec.Command(
 		nginx.Executable,
 		"deploy",
-		fmt.Sprintf("--nginx-mesh-api-image \"%s/nginx-mesh-api:%s\"", nginx.DockerRegistry, version),
-		fmt.Sprintf("--nginx-mesh-sidecar-image \"%s/nginx-mesh-sidecar:%s\"", nginx.DockerRegistry, version),
-		fmt.Sprintf("--nginx-mesh-init-image \"%s/nginx-mesh-init:%s\"", nginx.DockerRegistry, version),
-		fmt.Sprintf("--nginx-mesh-metrics-image \"%s/nginx-mesh-metrics:%s\"", nginx.DockerRegistry, version),
+		"--nginx-mesh-api-image",
+		fmt.Sprintf("%s/nginx-mesh-api:%s", nginx.DockerRegistry, version),
+		"--nginx-mesh-sidecar-image",
+		fmt.Sprintf("%s/nginx-mesh-sidecar:%s", nginx.DockerRegistry, version),
+		"--nginx-mesh-init-image",
+		fmt.Sprintf("%s/nginx-mesh-init:%s", nginx.DockerRegistry, version),
+		"--nginx-mesh-metrics-image",
+		fmt.Sprintf("%s/nginx-mesh-metrics:%s", nginx.DockerRegistry, version),
 	)
 	cmd.Stderr = &er
+	cmd.Stdout = &out
 
 	if err := cmd.Run(); err != nil {
+		nginx.Log.Debug(out.String())
 		return ErrExecDeploy(err, er.String())
 	}
 

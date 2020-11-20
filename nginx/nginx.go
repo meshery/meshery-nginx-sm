@@ -25,7 +25,7 @@ type Nginx struct {
 }
 
 // New initializes nginx handler.
-func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) adapter.Handler {
+func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler, executable string) adapter.Handler {
 	return &Nginx{
 		Adapter: adapter.Adapter{
 			Config:            c,
@@ -33,6 +33,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 			KubeconfigHandler: kc,
 		},
 		DockerRegistry: "layer5",
+		Executable:     executable,
 	}
 }
 
