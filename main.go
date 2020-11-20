@@ -5,42 +5,50 @@ import (
 	"os"
 	"time"
 
-	"github.com/layer5io/gokit/logger"
-	// "github.com/layer5io/gokit/tracing"
-	"github.com/layer5io/gokit/utils"
-	"github.com/layer5io/meshery-nginx/api/grpc"
-	"github.com/layer5io/meshery-nginx/internal/config"
 	"github.com/layer5io/meshery-nginx/nginx"
+	"github.com/layer5io/meshkit/logger"
+
+	// "github.com/layer5io/meshkit/tracing"
+	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-adapter-library/api/grpc"
+	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
+	"github.com/layer5io/meshery-nginx/internal/config"
 )
 
 var (
-	serviceName    = "nginx-adaptor"
-	configProvider = "viper"
-	kubeConfigPath = fmt.Sprintf("%s/.kube/config", utils.GetHome())
+	serviceName = "nginx-adaptor"
 )
 
 // main is the entrypoint of the adaptor
 func main() {
 
 	// Initialize Logger instance
-	log, err := logger.New(serviceName)
+	log, err := logger.New(serviceName, logger.Options{
+		Format: logger.SyslogLogFormat,
+	})
 	if err != nil {
-		fmt.Println("Logger Init Failed", err.Error())
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	// Initialize application specific configs and dependencies
 	// App and request config
-	cfg, err := config.New(configProvider)
+	cfg, err := config.New(configprovider.ViperKey)
 	if err != nil {
-		log.Err("Config Init Failed", err.Error())
+		log.Error(err)
 		os.Exit(1)
 	}
+
 	service := &grpc.Service{}
-	_ = cfg.Server(&service)
-	err = cfg.SetKey("kube-config-path", kubeConfigPath)
+	err = cfg.GetObject(adapter.ServerKey, service)
 	if err != nil {
-		log.Err("Cannot set kubeconfig path", err.Error())
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
+	if err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 
@@ -52,17 +60,18 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := nginx.New(cfg, log)
-	handler = nginx.AddLogger(log, handler)
+	handler := nginx.New(cfg, log, kubeconfigHandler)
+	handler = adapter.AddLogger(log, handler)
+
 	service.Handler = handler
-	service.Channel = make(chan interface{}, 100)
+	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
 
 	// Server Initialization
-	log.Info(fmt.Sprintf("Adaptor Started at: %s", service.Port))
-	err = grpc.Start(service)
+	log.Info("Adaptor Listening at port: ", service.Port)
+	err = grpc.Start(service, nil)
 	if err != nil {
-		log.Err("adapter crashed!!", err.Error())
+		log.Error(err)
 		os.Exit(1)
 	}
 }
