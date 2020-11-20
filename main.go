@@ -16,8 +16,17 @@ import (
 )
 
 var (
-	serviceName = "nginx-adaptor"
+	serviceName     = "nginx-adaptor"
+	nginxExecutable = ""
 )
+
+func init() {
+	var err error
+	if nginxExecutable, err = config.InitialiseNSMCtl(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
 
 // main is the entrypoint of the adaptor
 func main() {
@@ -60,7 +69,7 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := nginx.New(cfg, log, kubeconfigHandler)
+	handler := nginx.New(cfg, log, kubeconfigHandler, nginxExecutable)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler

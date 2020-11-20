@@ -15,9 +15,6 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_INSTALL),
 		Description: "Nginx Service Mesh",
 		Versions: []adapter.Version{
-			"1.0.0",
-			"0.7.3",
-			"0.7.0",
 			"0.6.0",
 		},
 		Templates: []adapter.Template{
