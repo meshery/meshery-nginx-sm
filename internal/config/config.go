@@ -91,6 +91,9 @@ func InitialiseNSMCtl() (string, error) {
 	// Look for the executable in the path
 	fmt.Println("Looking for nginx-meshctl in the path...")
 	executable, err := exec.LookPath("nginx-meshctl")
+	if err == nil {
+		return executable, nil
+	}
 
 	fmt.Println("Looking for nginx-meshctl in", configRootPath, "...")
 	executable = path.Join(configRootPath, "nginx-meshctl")
@@ -161,7 +164,9 @@ func installBinary(location, platform string, res *http.Response) error {
 
 		r.Close()
 
-		out.Chmod(0755)
+		if err = out.Chmod(0755); err != nil {
+			return fmt.Errorf("Failed to change permission of the binary")
+		}
 	case "windows":
 	}
 

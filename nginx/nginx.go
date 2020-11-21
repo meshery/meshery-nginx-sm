@@ -40,7 +40,7 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler, ex
 // ApplyOperation applies the operation on nginx
 func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 
-	operations := make(adapter.Operations, 0)
+	operations := make(adapter.Operations)
 	err := nginx.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
