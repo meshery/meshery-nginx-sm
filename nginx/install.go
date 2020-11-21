@@ -7,6 +7,8 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
+
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
 func (nginx *Nginx) installNginx(del bool, version string) (string, error) {
@@ -74,5 +76,19 @@ func (nginx *Nginx) runUninstallCmd() error {
 	}
 
 	// TODO: Remove sidecar proxy from deployments
+	return nil
+}
+
+func (nginx *Nginx) applyManifest(manifest []byte) error {
+	kclient, err := mesherykube.New(nginx.KubeClient, nginx.RestConfig)
+	if err != nil {
+		return err
+	}
+
+	err = kclient.ApplyManifest(manifest, mesherykube.ApplyOptions{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

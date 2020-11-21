@@ -78,6 +78,20 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				return
 			}
 		}(nginx, e)
+	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
+		go func(hh *Nginx, ee *adapter.Event) {
+			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			stat, err := hh.installSampleApp(opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
+			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
+			hh.StreamInfo(e)
+		}(nginx, e)
 	default:
 		nginx.StreamErr(e, ErrOpInvalid)
 	}

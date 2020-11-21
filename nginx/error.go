@@ -13,6 +13,7 @@ var (
 	ErrStreamEventCode  = "nginx_test_code"
 	ErrExecDeployCode   = "nginx_test_code"
 	ErrExecRemoveCode   = "nginx_test_code"
+	ErrSampleAppCode    = "nginx_test_code"
 
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
@@ -45,4 +46,9 @@ func ErrExecDeploy(err error, des string) error {
 // ErrExecRemove is the error for removing nginx service mesh
 func ErrExecRemove(err error, des string) error {
 	return errors.NewDefault(ErrExecRemoveCode, fmt.Sprintf("Error executing remove command: %s", des))
+}
+
+// ErrSampleApp is the error for operations on the sample apps
+func ErrSampleApp(err error) error {
+	return errors.NewDefault(ErrSampleAppCode, fmt.Sprintf("Error with sample app operation: %s", err.Error()))
 }
