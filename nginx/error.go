@@ -7,14 +7,12 @@ import (
 )
 
 var (
-	ErrInstallNginxCode  = "nginx_test_code"
-	ErrMeshConfigCode    = "nginx_test_code"
-	ErrFetchManifestCode = "nginx_test_code"
-	ErrClientConfigCode  = "nginx_test_code"
-	ErrClientSetCode     = "nginx_test_code"
-	ErrStreamEventCode   = "nginx_test_code"
-	ErrExecDeployCode    = "nginx_test_code"
-	ErrExecRemoveCode    = "nginx_test_code"
+	ErrInstallNginxCode = "nginx_test_code"
+	ErrMeshConfigCode   = "nginx_test_code"
+	ErrClientConfigCode = "nginx_test_code"
+	ErrStreamEventCode  = "nginx_test_code"
+	ErrExecDeployCode   = "nginx_test_code"
+	ErrExecRemoveCode   = "nginx_test_code"
 
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
@@ -29,19 +27,9 @@ func ErrMeshConfig(err error) error {
 	return errors.NewDefault(ErrMeshConfigCode, fmt.Sprintf("Error configuration mesh: %s", err.Error()))
 }
 
-// ErrPortForward is the error for mesh port forward
-func ErrFetchManifest(err error, des string) error {
-	return errors.NewDefault(ErrFetchManifestCode, fmt.Sprintf("Error fetching mesh manifest: %s", des))
-}
-
 // ErrClientConfig is the error for setting client config
 func ErrClientConfig(err error) error {
 	return errors.NewDefault(ErrClientConfigCode, fmt.Sprintf("Error setting client config: %s", err.Error()))
-}
-
-// ErrPortForward is the error for setting clientset
-func ErrClientSet(err error) error {
-	return errors.NewDefault(ErrClientSetCode, fmt.Sprintf("Error setting clientset: %s", err.Error()))
 }
 
 // ErrStreamEvent is the error for streaming event
