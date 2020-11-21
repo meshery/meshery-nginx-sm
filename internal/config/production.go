@@ -15,7 +15,7 @@ var (
 
 	productionServerConfig = map[string]string{
 		"name":    "nginx-adapter",
-		"port":    "10007",
+		"port":    "10010",
 		"version": "v1.0.0",
 	}
 
