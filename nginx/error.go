@@ -3,49 +3,52 @@ package nginx
 import (
 	"fmt"
 
-	"github.com/layer5io/gokit/errors"
+	"github.com/layer5io/meshkit/errors"
 )
 
 var (
-	ErrOpInvalid = errors.New(errors.ErrOpInvalid, "Invalid operation")
+	ErrInstallNginxCode = "nginx_test_code"
+	ErrMeshConfigCode   = "nginx_test_code"
+	ErrClientConfigCode = "nginx_test_code"
+	ErrStreamEventCode  = "nginx_test_code"
+	ErrExecDeployCode   = "nginx_test_code"
+	ErrExecRemoveCode   = "nginx_test_code"
+	ErrSampleAppCode    = "nginx_test_code"
+
+	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
-// ErrInstallMesh is the error for install mesh
-func ErrInstallMesh(err error) error {
-	return errors.New(errors.ErrInstallMesh, fmt.Sprintf("Error installing mesh: %s", err.Error()))
+// ErrInstallNginx is the error for install mesh
+func ErrInstallNginx(err error) error {
+	return errors.NewDefault(ErrInstallNginxCode, fmt.Sprintf("Error installing nginx: %s", err.Error()))
 }
 
 // ErrMeshConfig is the error for mesh config
 func ErrMeshConfig(err error) error {
-	return errors.New(errors.ErrMeshConfig, fmt.Sprintf("Error configuration mesh: %s", err.Error()))
-}
-
-// ErrPortForward is the error for mesh port forward
-func ErrPortForward(err error) error {
-	return errors.New(errors.ErrPortForward, fmt.Sprintf("Error portforwarding mesh gui: %s", err.Error()))
+	return errors.NewDefault(ErrMeshConfigCode, fmt.Sprintf("Error configuration mesh: %s", err.Error()))
 }
 
 // ErrClientConfig is the error for setting client config
 func ErrClientConfig(err error) error {
-	return errors.New(errors.ErrClientConfig, fmt.Sprintf("Error setting client config: %s", err.Error()))
-}
-
-// ErrPortForward is the error for setting clientset
-func ErrClientSet(err error) error {
-	return errors.New(errors.ErrClientSet, fmt.Sprintf("Error setting clientset: %s", err.Error()))
+	return errors.NewDefault(ErrClientConfigCode, fmt.Sprintf("Error setting client config: %s", err.Error()))
 }
 
 // ErrStreamEvent is the error for streaming event
 func ErrStreamEvent(err error) error {
-	return errors.New(errors.ErrStreamEvent, fmt.Sprintf("Error streaming event: %s", err.Error()))
+	return errors.NewDefault(ErrStreamEventCode, fmt.Sprintf("Error streaming event: %s", err.Error()))
 }
 
-// ErrApplyOperation is the error for applying operation event
-func ErrApplyOperation(err error) error {
-	return errors.New(errors.ErrApplyOperation, fmt.Sprintf("Error applying operation: %s", err.Error()))
+// ErrExecDeploy is the error for deploying nginx service mesh
+func ErrExecDeploy(err error, des string) error {
+	return errors.NewDefault(ErrExecDeployCode, fmt.Sprintf("Error executing deploy command: %s", des))
 }
 
-// ErrListOperations is the error for listing operations event
-func ErrListOperations(err error) error {
-	return errors.New(errors.ErrListOperations, fmt.Sprintf("Error listing operations: %s", err.Error()))
+// ErrExecRemove is the error for removing nginx service mesh
+func ErrExecRemove(err error, des string) error {
+	return errors.NewDefault(ErrExecRemoveCode, fmt.Sprintf("Error executing remove command: %s", des))
+}
+
+// ErrSampleApp is the error for operations on the sample apps
+func ErrSampleApp(err error) error {
+	return errors.NewDefault(ErrSampleAppCode, fmt.Sprintf("Error with sample app operation: %s", err.Error()))
 }
