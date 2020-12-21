@@ -19,9 +19,14 @@ import (
 )
 
 const (
-	ErrEmptyConfigCode = "11300"
+	ErrEmptyConfigCode   = "test"
+	ErrInstallBinaryCode = "test"
 )
 
 var (
 	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
 )
+
+func ErrInstallBinary(err error) error {
+	return errors.NewDefault(ErrInstallBinaryCode, "Failed to change permission of the binary", err.Error())
+}

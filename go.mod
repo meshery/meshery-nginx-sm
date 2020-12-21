@@ -8,8 +8,9 @@ replace (
 )
 
 require (
-	github.com/layer5io/meshery-adapter-library v0.1.6
-	github.com/layer5io/meshkit v0.1.28
+	github.com/layer5io/meshery-adapter-library v0.1.9
+	github.com/layer5io/meshkit v0.1.30
 	google.golang.org/grpc v1.33.1 // indirect
 	helm.sh/helm/v3 v3.3.4 // indirect
+	k8s.io/apimachinery v0.18.12
 )

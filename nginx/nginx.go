@@ -15,25 +15,19 @@ import (
 type Nginx struct {
 	adapter.Adapter // Type Embedded
 
-	// DockerRegistry is the registry for
-	// nginx service mesh related images
-	DockerRegistry string
-
 	// Executable is the path where the
 	// nginx-meshctl is located
 	Executable string
 }
 
 // New initializes nginx handler.
-func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler, executable string) adapter.Handler {
+func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) adapter.Handler {
 	return &Nginx{
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
 			KubeconfigHandler: kc,
 		},
-		DockerRegistry: "layer5",
-		Executable:     executable,
 	}
 }
 
@@ -70,18 +64,25 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(nginx, e)
 	case common.SmiConformanceOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
+			name := operations[opReq.OperationName].Description
 			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
 				Ctx:  context.TODO(),
 				OpID: ee.Operationid,
 			})
 			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
 				return
 			}
+			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
+			ee.Details = ""
+			hh.StreamInfo(e)
 		}(nginx, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			stat, err := hh.installSampleApp(opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
@@ -90,6 +91,19 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
+			hh.StreamInfo(e)
+		}(nginx, e)
+	case common.CustomOperation:
+		go func(hh *Nginx, ee *adapter.Event) {
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
+			ee.Details = ""
 			hh.StreamInfo(e)
 		}(nginx, e)
 	default:

@@ -8,6 +8,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 
+	internalconfig "github.com/layer5io/meshery-nginx/internal/config"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
@@ -42,16 +43,16 @@ func (nginx *Nginx) runInstallCmd(version string) error {
 	var er, out bytes.Buffer
 
 	cmd := exec.Command(
-		nginx.Executable,
+		internalconfig.NginxExecutable,
 		"deploy",
 		"--nginx-mesh-api-image",
-		fmt.Sprintf("%s/nginx-mesh-api:%s", nginx.DockerRegistry, version),
+		fmt.Sprintf("nginx/nginx-mesh-api:%s", version),
 		"--nginx-mesh-sidecar-image",
-		fmt.Sprintf("%s/nginx-mesh-sidecar:%s", nginx.DockerRegistry, version),
+		fmt.Sprintf("nginx/nginx-mesh-sidecar:%s", version),
 		"--nginx-mesh-init-image",
-		fmt.Sprintf("%s/nginx-mesh-init:%s", nginx.DockerRegistry, version),
+		fmt.Sprintf("nginx/nginx-mesh-init:%s", version),
 		"--nginx-mesh-metrics-image",
-		fmt.Sprintf("%s/nginx-mesh-metrics:%s", nginx.DockerRegistry, version),
+		fmt.Sprintf("nginx/nginx-mesh-metrics:%s", version),
 	)
 	cmd.Stderr = &er
 	cmd.Stdout = &out
@@ -79,13 +80,17 @@ func (nginx *Nginx) runUninstallCmd() error {
 	return nil
 }
 
-func (nginx *Nginx) applyManifest(manifest []byte) error {
+func (nginx *Nginx) applyManifest(manifest []byte, isDel bool, namespace string) error {
 	kclient, err := mesherykube.New(nginx.KubeClient, nginx.RestConfig)
 	if err != nil {
 		return err
 	}
 
-	err = kclient.ApplyManifest(manifest, mesherykube.ApplyOptions{})
+	err = kclient.ApplyManifest(manifest, mesherykube.ApplyOptions{
+		Namespace: namespace,
+		Update:    true,
+		Delete:    isDel,
+	})
 	if err != nil {
 		return err
 	}

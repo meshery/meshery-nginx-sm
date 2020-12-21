@@ -1,21 +1,24 @@
-FROM golang:1.14-stretch as bd
-ARG CONFIG_PROVIDER="viper"
-RUN apt update && apt install git libc-dev gcc pkgconf -y
-COPY ${PWD} /go/src/github.com/layer5io/meshery-nginx/
-WORKDIR /go/src/github.com/layer5io/meshery-nginx/
-RUN go build -ldflags="-w -s -X main.configProvider=$CONFIG_PROVIDER" -a -o meshery-nginx
+FROM golang:1.13 as builder
 
-FROM golang:1.14-stretch
-RUN apt update && apt install ca-certificates curl -y
-# Install kubectl
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl" && \
-	chmod +x ./kubectl && \
-	mv ./kubectl /usr/local/bin/kubectl
+WORKDIR /build
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+# Copy the go source
+COPY main.go main.go
+COPY internal/ internal/
+COPY nginx/ nginx/
+# Build
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o meshery-nginx main.go
 
-RUN mkdir /home/scripts/ && \
-	mkdir -p ${HOME}/.kube/
-
-COPY --from=bd /go/src/github.com/layer5io/meshery-nginx/meshery-nginx /home/
-COPY ${PWD}/scripts /home/scripts
-WORKDIR /home
-CMD ./meshery-nginx
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/base
+ENV DISTRO="debian"
+ENV GOARCH="amd64"
+WORKDIR /
+COPY --from=builder /build/meshery-nginx .
+ENTRYPOINT ["/meshery-nginx"]
