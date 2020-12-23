@@ -69,7 +69,7 @@ func (nginx *Nginx) runUninstallCmd() error {
 	var er bytes.Buffer
 
 	// Remove the service mesh from kubernetes
-	cmd := exec.Command(nginx.Executable, "remove", "-y")
+	cmd := exec.Command(internalconfig.NginxExecutable, "remove", "-y")
 	cmd.Stderr = &er
 
 	if err := cmd.Run(); err != nil {

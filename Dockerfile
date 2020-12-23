@@ -19,6 +19,8 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o meshery-
 FROM gcr.io/distroless/base
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
+WORKDIR /.meshery
+COPY bin/nginx-meshctl .
 WORKDIR /
 COPY --from=builder /build/meshery-nginx .
 ENTRYPOINT ["/meshery-nginx"]

@@ -14,10 +14,6 @@ import (
 
 type Nginx struct {
 	adapter.Adapter // Type Embedded
-
-	// Executable is the path where the
-	// nginx-meshctl is located
-	Executable string
 }
 
 // New initializes nginx handler.
