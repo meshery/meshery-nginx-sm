@@ -12,6 +12,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+// Nginx defines a model for this adapter
 type Nginx struct {
 	adapter.Adapter // Type Embedded
 }
