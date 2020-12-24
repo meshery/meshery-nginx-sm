@@ -26,7 +26,7 @@ const (
 var (
 	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
 )
-
+// ErrInstallBinary captures failure to update filesystem permissions
 func ErrInstallBinary(err error) error {
 	return errors.NewDefault(ErrInstallBinaryCode, "Failed to change permission of the binary", err.Error())
 }
