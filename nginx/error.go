@@ -5,6 +5,7 @@ import (
 )
 
 var (
+        // ErrInstallNginxCode should really have an error code defined by now.
 	ErrInstallNginxCode    = "nginx_test_code"
 	ErrMeshConfigCode      = "nginx_test_code"
 	ErrClientConfigCode    = "nginx_test_code"
