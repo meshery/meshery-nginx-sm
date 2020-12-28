@@ -166,7 +166,10 @@ func installBinary(location, platform string, res *http.Response) error {
 			return err
 		}
 
-		r.Close()
+		err = r.Close()
+		if err != nil {
+			return err
+		}
 
 		if err = out.Chmod(0755); err != nil {
 			return ErrInstallBinary(err)
