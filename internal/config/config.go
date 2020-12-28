@@ -24,7 +24,7 @@ const (
 
 var (
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
-	NginxExecutable = path.Join(configRootPath, "nginx-meshctl")
+	NginxExecutable = "nginx-meshctl"
 
 	Config = configprovider.Options{
 		ServerConfig:   ServerConfig,

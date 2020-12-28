@@ -15,18 +15,33 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/layer5io/meshkit/errors"
 )
 
 const (
-	ErrEmptyConfigCode   = "test"
-	ErrInstallBinaryCode = "test"
+	ErrEmptyConfigCode           = "test"
+	ErrInstallBinaryCode         = "test"
+	ErrGetLatestReleasesCode     = "test"
+	ErrGetLatestReleaseNamesCode = "test"
 )
 
 var (
 	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
 )
+
 // ErrInstallBinary captures failure to update filesystem permissions
 func ErrInstallBinary(err error) error {
 	return errors.NewDefault(ErrInstallBinaryCode, "Failed to change permission of the binary", err.Error())
+}
+
+// ErrGetLatestReleases is the error for fetching istio releases
+func ErrGetLatestReleases(err error) error {
+	return errors.NewDefault(ErrGetLatestReleasesCode, fmt.Sprintf("unable to fetch release info: %s", err.Error()))
+}
+
+// ErrGetLatestReleaseNames is the error for fetching istio releases
+func ErrGetLatestReleaseNames(err error) error {
+	return errors.NewDefault(ErrGetLatestReleaseNamesCode, fmt.Sprintf("failed to extract release names: %s", err.Error()))
 }
