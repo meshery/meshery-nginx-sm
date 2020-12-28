@@ -99,12 +99,12 @@ func RootPath() string {
 // "configRootPath" and returns the path for the executable
 func InitialiseNSMCtl() error {
 	// Look for the executable in the path
-	executable, err := exec.LookPath(NginxExecutable)
+	_, err := exec.LookPath(NginxExecutable)
 	if err == nil {
 		return nil
 	}
 
-	executable = path.Join(configRootPath, "nginx-meshctl")
+	executable := path.Join(configRootPath, "nginx-meshctl")
 	if _, err := os.Stat(executable); err == nil {
 		return nil
 	}
@@ -151,7 +151,6 @@ func installBinary(location, platform string, res *http.Response) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
 
 	switch platform {
 	case "darwin":
@@ -176,6 +175,15 @@ func installBinary(location, platform string, res *http.Response) error {
 	}
 
 	// Close the response body
-	res.Body.Close()
+	err = out.Close()
+	if err != nil {
+		return err
+	}
+
+	err = res.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

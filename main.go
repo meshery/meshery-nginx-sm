@@ -17,8 +17,7 @@ import (
 )
 
 var (
-	serviceName     = "nginx-adaptor"
-	nginxExecutable = ""
+	serviceName = "nginx-adaptor"
 )
 
 func init() {
