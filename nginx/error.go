@@ -7,14 +7,21 @@ import (
 )
 
 var (
+	// ErrInstallNginxCode provisioning failure
 	ErrInstallNginxCode = "nginx_test_code"
+	// ErrMeshConfigCode   service mesh configuration failure
 	ErrMeshConfigCode   = "nginx_test_code"
+	// ErrClientConfigCode adapter configuration failure
 	ErrClientConfigCode = "nginx_test_code"
+	// ErrStreamEventCode  failure
 	ErrStreamEventCode  = "nginx_test_code"
+	// ErrExecDeployCode   failure
 	ErrExecDeployCode   = "nginx_test_code"
+	// ErrExecRemoveCode   failure
 	ErrExecRemoveCode   = "nginx_test_code"
+	// ErrSampleAppCode    failure
 	ErrSampleAppCode    = "nginx_test_code"
-
+	// ErrOpInvalid failure
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
