@@ -10,69 +10,74 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
+	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
 )
 
 const (
 	NginxOperation = "nginx"
-	Development    = "development"
-	Production     = "production"
+	LabelNamespace = "label-namespace"
 )
 
 var (
-	configRootPath = path.Join(utils.GetHome(), ".meshery")
+	configRootPath  = path.Join(utils.GetHome(), ".meshery")
+	NginxExecutable = "nginx-meshctl"
 
-	kubeconfigFilename = "kubeconfig"
-	kubeconfigFiletype = "yaml"
-	KubeconfigPath     = path.Join(configRootPath, fmt.Sprintf("%s.%s", kubeconfigFilename, kubeconfigFiletype))
+	Config = configprovider.Options{
+		ServerConfig:   ServerConfig,
+		MeshSpec:       MeshSpec,
+		ProviderConfig: ProviderConfig,
+		Operations:     Operations,
+	}
+
+	ServerConfig = map[string]string{
+		"name":    "nginx-adapter",
+		"port":    "10010",
+		"version": "v1.0.0",
+	}
+
+	MeshSpec = map[string]string{
+		"name":     "nginx",
+		"status":   status.None,
+		"traceurl": status.None,
+		"version":  status.None,
+	}
+
+	ProviderConfig = map[string]string{
+		configprovider.FilePath: configRootPath,
+		configprovider.FileType: "yaml",
+		configprovider.FileName: "nginx",
+	}
+
+	// KubeConfig - Controlling the kubeconfig lifecycle with viper
+	KubeConfig = map[string]string{
+		configprovider.FilePath: configRootPath,
+		configprovider.FileType: "yaml",
+		configprovider.FileName: "kubeconfig",
+	}
+
+	Operations = getOperations(common.Operations)
 )
 
 // New creates a new config instance
 func New(provider string) (config.Handler, error) {
-
-	// Default config
-	opts := configprovider.Options{}
-	environment := os.Getenv("MESHERY_ENV")
-	if len(environment) < 1 {
-		environment = Development
-	}
-
-	// Config environment
-	switch environment {
-	case Production:
-		opts = ProductionConfig
-	case Development:
-		opts = DevelopmentConfig
-	}
-
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		return configprovider.NewViper(opts)
+		return configprovider.NewViper(Config)
 	case configprovider.InMemKey:
-		return configprovider.NewInMem(opts)
+		return configprovider.NewInMem(Config)
 	}
 
 	return nil, ErrEmptyConfig
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
-
 	opts := configprovider.Options{}
-	environment := os.Getenv("MESHERY_ENV")
-	if len(environment) < 1 {
-		environment = Development
-	}
-
-	// Config environment
-	switch environment {
-	case Production:
-		opts.ProviderConfig = productionKubeConfig
-	case Development:
-		opts.ProviderConfig = developmentKubeConfig
-	}
+	opts.ProviderConfig = KubeConfig
 
 	// Config provider
 	switch provider {
@@ -84,38 +89,38 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 	return nil, ErrEmptyConfig
 }
 
+// RootPath returns the config root path for the adapter
+func RootPath() string {
+	return configRootPath
+}
+
 // InitialiseNSMCtl looks for the "nginx-meshctl" in the $PATH
 // if it doesn't finds it then it downloads and installs it in
 // "configRootPath" and returns the path for the executable
-func InitialiseNSMCtl() (string, error) {
+func InitialiseNSMCtl() error {
 	// Look for the executable in the path
-	fmt.Println("Looking for nginx-meshctl in the path...")
-	executable, err := exec.LookPath("nginx-meshctl")
+	_, err := exec.LookPath(NginxExecutable)
 	if err == nil {
-		return executable, nil
+		return nil
 	}
 
-	fmt.Println("Looking for nginx-meshctl in", configRootPath, "...")
-	executable = path.Join(configRootPath, "nginx-meshctl")
+	executable := path.Join(configRootPath, "nginx-meshctl")
 	if _, err := os.Stat(executable); err == nil {
-		return executable, nil
+		return nil
 	}
 
 	// Proceed to download the binary in the config root path
-	fmt.Println("nginx-meshctl not found in the path, downloading...")
 	res, err := downloadBinary(runtime.GOOS)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// Install the binary
-	fmt.Println("Installing...")
-	if err = installBinary(path.Join(configRootPath, "nginx-meshctl"), runtime.GOOS, res); err != nil {
-		return "", err
+	if err = installBinary(NginxExecutable, runtime.GOOS, res); err != nil {
+		return err
 	}
 
-	fmt.Println("Done")
-	return path.Join(configRootPath, "nginx-meshctl"), nil
+	return nil
 }
 
 func downloadBinary(platform string) (*http.Response, error) {
@@ -146,7 +151,6 @@ func installBinary(location, platform string, res *http.Response) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
 
 	switch platform {
 	case "darwin":
@@ -162,15 +166,27 @@ func installBinary(location, platform string, res *http.Response) error {
 			return err
 		}
 
-		r.Close()
+		err = r.Close()
+		if err != nil {
+			return err
+		}
 
 		if err = out.Chmod(0755); err != nil {
-			return fmt.Errorf("Failed to change permission of the binary")
+			return ErrInstallBinary(err)
 		}
 	case "windows":
 	}
 
 	// Close the response body
-	res.Body.Close()
+	err = out.Close()
+	if err != nil {
+		return err
+	}
+
+	err = res.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

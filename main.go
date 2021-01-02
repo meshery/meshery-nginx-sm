@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 	"time"
 
 	"github.com/layer5io/meshery-nginx/nginx"
@@ -16,13 +17,12 @@ import (
 )
 
 var (
-	serviceName     = "nginx-adaptor"
-	nginxExecutable = ""
+	serviceName = "nginx-adaptor"
 )
 
 func init() {
 	var err error
-	if nginxExecutable, err = config.InitialiseNSMCtl(); err != nil {
+	if err = config.InitialiseNSMCtl(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -38,6 +38,15 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	err = os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
+	if err != nil {
+		// Fail silently
+		log.Warn(err)
 	}
 
 	// Initialize application specific configs and dependencies
@@ -69,7 +78,7 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := nginx.New(cfg, log, kubeconfigHandler, nginxExecutable)
+	handler := nginx.New(cfg, log, kubeconfigHandler)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
