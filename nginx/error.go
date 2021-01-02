@@ -5,16 +5,23 @@ import (
 )
 
 var (
-        // ErrInstallNginxCode should really have an error code defined by now.
-	ErrInstallNginxCode    = "nginx_test_code"
-	ErrMeshConfigCode      = "nginx_test_code"
-	ErrClientConfigCode    = "nginx_test_code"
-	ErrStreamEventCode     = "nginx_test_code"
-	ErrExecDeployCode      = "nginx_test_code"
-	ErrExecRemoveCode      = "nginx_test_code"
-	ErrSampleAppCode       = "nginx_test_code"
-	ErrCustomOperationCode = "nginx_test_code"
-
+  // ErrCustomOperationCode should really have an error code defined by now.
+  ErrCustomOperationCode = "nginx_test_code"
+	// ErrInstallNginxCode provisioning failure
+	ErrInstallNginxCode = "nginx_test_code"
+	// ErrMeshConfigCode   service mesh configuration failure
+	ErrMeshConfigCode   = "nginx_test_code"
+	// ErrClientConfigCode adapter configuration failure
+	ErrClientConfigCode = "nginx_test_code"
+	// ErrStreamEventCode  failure
+	ErrStreamEventCode  = "nginx_test_code"
+	// ErrExecDeployCode   failure
+	ErrExecDeployCode   = "nginx_test_code"
+	// ErrExecRemoveCode   failure
+	ErrExecRemoveCode   = "nginx_test_code"
+	// ErrSampleAppCode    failure
+	ErrSampleAppCode    = "nginx_test_code"
+	// ErrOpInvalid failure
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
