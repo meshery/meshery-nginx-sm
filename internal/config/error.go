@@ -15,8 +15,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/layer5io/meshkit/errors"
 )
 
@@ -28,20 +26,21 @@ const (
 )
 
 var (
-	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
+	// ErrEmptyConfig error is the error when config is invalid
+	ErrEmptyConfig = errors.New(ErrEmptyConfigCode, errors.Alert, []string{"Config is empty"}, []string{}, []string{}, []string{})
 )
+
+// ErrGetLatestReleases is the error for fetching nsm-mesh releases
+func ErrGetLatestReleases(err error) error {
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"Unable to fetch release info"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrGetLatestReleaseNames is the error for fetching nsm-mesh releases
+func ErrGetLatestReleaseNames(err error) error {
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"Failed to extract release names"}, []string{err.Error()}, []string{}, []string{})
+}
 
 // ErrInstallBinary captures failure to update filesystem permissions
 func ErrInstallBinary(err error) error {
-	return errors.NewDefault(ErrInstallBinaryCode, "Failed to change permission of the binary", err.Error())
-}
-
-// ErrGetLatestReleases is the error for fetching istio releases
-func ErrGetLatestReleases(err error) error {
-	return errors.NewDefault(ErrGetLatestReleasesCode, fmt.Sprintf("unable to fetch release info: %s", err.Error()))
-}
-
-// ErrGetLatestReleaseNames is the error for fetching istio releases
-func ErrGetLatestReleaseNames(err error) error {
-	return errors.NewDefault(ErrGetLatestReleaseNamesCode, fmt.Sprintf("failed to extract release names: %s", err.Error()))
+	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Failed to change permission of the binary"}, []string{err.Error()}, []string{}, []string{})
 }

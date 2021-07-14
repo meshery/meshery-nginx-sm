@@ -81,12 +81,7 @@ func (nginx *Nginx) runUninstallCmd() error {
 }
 
 func (nginx *Nginx) applyManifest(manifest []byte, isDel bool, namespace string) error {
-	kclient, err := mesherykube.New(nginx.KubeClient, nginx.RestConfig)
-	if err != nil {
-		return err
-	}
-
-	err = kclient.ApplyManifest(manifest, mesherykube.ApplyOptions{
+	err := nginx.MesheryKubeclient.ApplyManifest(manifest, mesherykube.ApplyOptions{
 		Namespace: namespace,
 		Update:    true,
 		Delete:    isDel,

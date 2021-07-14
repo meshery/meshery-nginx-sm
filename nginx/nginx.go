@@ -62,9 +62,13 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case common.SmiConformanceOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
-			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
-				Ctx:  context.TODO(),
-				OpID: ee.Operationid,
+			_, err := hh.RunSMITest(adapter.SMITestOptions{
+				Ctx:         context.TODO(),
+				OperationID: ee.Operationid,
+				Manifest:    string(operations[opReq.OperationName].Templates[0]),
+				Namespace:   "meshery",
+				Labels:      make(map[string]string),
+				Annotations: make(map[string]string),
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
