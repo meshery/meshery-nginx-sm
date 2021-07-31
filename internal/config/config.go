@@ -140,7 +140,7 @@ func downloadBinary(platform string) (*http.Response, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Bad status: %s", resp.Status)
+		return nil, fmt.Errorf("bad status: %s", resp.Status)
 	}
 
 	return resp, nil
@@ -161,7 +161,7 @@ func installBinary(location, platform string, res *http.Response) error {
 			return err
 		}
 
-		_, err = io.Copy(out, r)
+		_, err = io.CopyN(out, r, 1024)
 		if err != nil {
 			return err
 		}
