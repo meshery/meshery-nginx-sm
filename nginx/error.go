@@ -22,7 +22,7 @@ var (
 	// ErrSampleAppCode    failure
 	ErrSampleAppCode = "nginx_test_code"
 	// ErrOpInvalidCode failure
-	ErrOpInvalidCode = "1014"
+	ErrOpInvalidCode = "nginx_test_code"
 
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
