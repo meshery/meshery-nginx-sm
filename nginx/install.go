@@ -41,7 +41,7 @@ func (nginx *Nginx) installNginx(del bool, version string) (string, error) {
 
 func (nginx *Nginx) runInstallCmd(version string) error {
 	var er, out bytes.Buffer
-
+	// #nosec G204
 	cmd := exec.Command(
 		internalconfig.NginxExecutable,
 		"deploy",
@@ -69,6 +69,7 @@ func (nginx *Nginx) runUninstallCmd() error {
 	var er bytes.Buffer
 
 	// Remove the service mesh from kubernetes
+	// #nosec G204
 	cmd := exec.Command(internalconfig.NginxExecutable, "remove", "-y")
 	cmd.Stderr = &er
 
