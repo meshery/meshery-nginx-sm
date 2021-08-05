@@ -16,17 +16,17 @@ import (
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
-	NginxOperation = "nginx"
 	LabelNamespace = "label-namespace"
 )
 
 var (
-	// NginxMeshOperation is the default name for the install
+	// NginxOperation is the default name for the install
 	// and uninstall commands on the nginx mesh
-	NginxMeshOperation = strings.ToLower(smp.ServiceMesh_NGINX_MESH.Enum().String())
+	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String())
 
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
 	NginxExecutable = "nginx-meshctl"
