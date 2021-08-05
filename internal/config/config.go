@@ -26,7 +26,7 @@ const (
 var (
 	// NginxOperation is the default name for the install
 	// and uninstall commands on the nginx mesh
-	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_MESH.Enum().String())
+	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String())
 
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
 	NginxExecutable = "nginx-meshctl"
