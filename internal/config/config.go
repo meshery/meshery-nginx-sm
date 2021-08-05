@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
@@ -23,6 +24,10 @@ const (
 )
 
 var (
+	// NginxMeshOperation is the default name for the install
+	// and uninstall commands on the nginx mesh
+	NginxMeshOperation = strings.ToLower(smp.ServiceMesh_NGINX_MESH.Enum().String())
+
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
 	NginxExecutable = "nginx-meshctl"
 
