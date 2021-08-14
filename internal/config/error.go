@@ -23,6 +23,7 @@ const (
 	ErrInstallBinaryCode         = "test"
 	ErrGetLatestReleasesCode     = "test"
 	ErrGetLatestReleaseNamesCode = "test"
+	ErrStatusCheckCode           = "test"
 )
 
 var (
@@ -43,4 +44,8 @@ func ErrGetLatestReleaseNames(err error) error {
 // ErrInstallBinary captures failure to update filesystem permissions
 func ErrInstallBinary(err error) error {
 	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Failed to change permission of the binary"}, []string{err.Error()}, []string{}, []string{})
+}
+
+func ErrStatusCheck(status string) error {
+	return errors.New(ErrStatusCheckCode, errors.Alert, []string{"Error Bad Status", status}, []string{}, []string{}, []string{})
 }

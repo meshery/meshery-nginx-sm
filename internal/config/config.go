@@ -2,7 +2,6 @@ package config
 
 import (
 	"compress/gzip"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -140,7 +139,7 @@ func downloadBinary(platform string) (*http.Response, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %s", resp.Status)
+		return nil, ErrStatusCheck(resp.Status)
 	}
 
 	return resp, nil
