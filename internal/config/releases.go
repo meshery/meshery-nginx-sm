@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
@@ -46,9 +45,10 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 
 	for _, release := range releases {
 		releaseStr := string(release.Name)
-		versionStr := strings.Split(releaseStr, " ")[1]
+		// fmt.Print(releaseStr)
+		// versionStr := strings.Split(releaseStr, " ")[1]
 		if r.MatchString(releaseStr) {
-			result = append(result, adapter.Version(versionStr))
+			result = append(result, adapter.Version(releaseStr))
 		}
 	}
 
@@ -66,7 +66,7 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 
 // GetLatestReleases fetches the latest releases from the osm repository
 func GetLatestReleases(releases uint) ([]*Release, error) {
-	releaseAPIURL := "https://api.github.com/repos/openservicemesh/osm/releases?per_page=" + fmt.Sprint(releases)
+	releaseAPIURL := "https://api.github.com/repos/nginxinc/nginx-service-mesh/releases?per_page=" + fmt.Sprint(releases)
 	// We need a variable url here hence using nosec
 	// #nosec
 	resp, err := http.Get(releaseAPIURL)

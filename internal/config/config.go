@@ -2,7 +2,6 @@ package config
 
 import (
 	"compress/gzip"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -145,7 +144,7 @@ func downloadBinary(platform string) (*http.Response, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Bad status: %s", resp.Status)
+		return nil, ErrStatusCheck(resp.Status)
 	}
 
 	return resp, nil
@@ -165,7 +164,8 @@ func installBinary(location, platform string, res *http.Response) error {
 		if err != nil {
 			return err
 		}
-
+		// Temporary. We'll get rid of this later. 
+		// #nosec
 		_, err = io.Copy(out, r)
 		if err != nil {
 			return err
