@@ -64,7 +64,7 @@ func ErrCustomOperation(err error) error {
 	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with applying custom operation"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrApplyHelmChart: the occurend while applying helm chart
+// ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
