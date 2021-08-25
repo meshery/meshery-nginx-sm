@@ -68,7 +68,9 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				Manifest:    string(operations[opReq.OperationName].Templates[0]),
 				Namespace:   "meshery",
 				Labels:      make(map[string]string),
-				Annotations: make(map[string]string),
+				Annotations: map[string]string{
+					"injector.nsm.nginx.com/auto-inject": "true",
+				},
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
