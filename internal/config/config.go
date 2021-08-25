@@ -21,6 +21,8 @@ var (
 	// and uninstall commands on the nginx mesh
 	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String())
 
+	ServerVersion  = status.None
+	ServerGitSHA   = status.None
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
@@ -30,19 +32,22 @@ var (
 		Operations:     Operations,
 	}
 
+	// ServerConfig is the configuration for the gRPC server
 	ServerConfig = map[string]string{
-		"name":    "nginx-adapter",
-		"port":    "10010",
-		"version": "v1.0.0",
-	}
-
-	MeshSpec = map[string]string{
-		"name":     "nginx",
-		"status":   status.None,
+		"name":     smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String(),
+		"type":     "adapter",
+		"port":     "10010",
 		"traceurl": status.None,
-		"version":  status.None,
 	}
 
+	// MeshSpec is the spec for the service mesh associated with this adapter
+	MeshSpec = map[string]string{
+		"name":    smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String(),
+		"status":  status.NotInstalled,
+		"version": status.None,
+	}
+
+	// ProviderConfig is the config for the configuration provider
 	ProviderConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
@@ -56,6 +61,8 @@ var (
 		configprovider.FileName: "kubeconfig",
 	}
 
+	// Operations represents the set of valid operations that are available
+	// to the adapter
 	Operations = getOperations(common.Operations)
 )
 
