@@ -12,15 +12,13 @@ COPY main.go main.go
 COPY internal/ internal/
 COPY nginx/ nginx/
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o meshery-nginx main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o meshery-nginx-sm main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/base
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
-WORKDIR /.meshery
-COPY bin/nginx-meshctl .
 WORKDIR /
-COPY --from=builder /build/meshery-nginx .
-ENTRYPOINT ["/meshery-nginx"]
+COPY --from=builder /build/meshery-nginx-sm .
+ENTRYPOINT ["/meshery-nginx-sm"]
