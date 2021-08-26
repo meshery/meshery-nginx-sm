@@ -1,13 +1,7 @@
 package config
 
 import (
-	"compress/gzip"
-	"io"
-	"net/http"
-	"os"
-	"os/exec"
 	"path"
-	"runtime"
 	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -27,8 +21,9 @@ var (
 	// and uninstall commands on the nginx mesh
 	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String())
 
+	ServerVersion  = status.None
+	ServerGitSHA   = status.None
 	configRootPath  = path.Join(utils.GetHome(), ".meshery")
-	NginxExecutable = "nginx-meshctl"
 
 	Config = configprovider.Options{
 		ServerConfig:   ServerConfig,
@@ -37,19 +32,22 @@ var (
 		Operations:     Operations,
 	}
 
+	// ServerConfig is the configuration for the gRPC server
 	ServerConfig = map[string]string{
-		"name":    "nginx-adapter",
-		"port":    "10010",
-		"version": "v1.0.0",
-	}
-
-	MeshSpec = map[string]string{
-		"name":     "nginx",
-		"status":   status.None,
+		"name":     smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String(),
+		"type":     "adapter",
+		"port":     "10010",
 		"traceurl": status.None,
-		"version":  status.None,
 	}
 
+	// MeshSpec is the spec for the service mesh associated with this adapter
+	MeshSpec = map[string]string{
+		"name":    smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String(),
+		"status":  status.NotInstalled,
+		"version": status.None,
+	}
+
+	// ProviderConfig is the config for the configuration provider
 	ProviderConfig = map[string]string{
 		configprovider.FilePath: configRootPath,
 		configprovider.FileType: "yaml",
@@ -63,6 +61,8 @@ var (
 		configprovider.FileName: "kubeconfig",
 	}
 
+	// Operations represents the set of valid operations that are available
+	// to the adapter
 	Operations = getOperations(common.Operations)
 )
 
@@ -96,102 +96,4 @@ func NewKubeconfigBuilder(provider string) (config.Handler, error) {
 // RootPath returns the config root path for the adapter
 func RootPath() string {
 	return configRootPath
-}
-
-// InitialiseNSMCtl looks for the "nginx-meshctl" in the $PATH
-// if it doesn't finds it then it downloads and installs it in
-// "configRootPath" and returns the path for the executable
-func InitialiseNSMCtl() error {
-	// Look for the executable in the path
-	_, err := exec.LookPath(NginxExecutable)
-	if err == nil {
-		return nil
-	}
-
-	executable := path.Join(configRootPath, "nginx-meshctl")
-	if _, err := os.Stat(executable); err == nil {
-		return nil
-	}
-
-	// Proceed to download the binary in the config root path
-	res, err := downloadBinary(runtime.GOOS)
-	if err != nil {
-		return err
-	}
-
-	// Install the binary
-	if err = installBinary(NginxExecutable, runtime.GOOS, res); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func downloadBinary(platform string) (*http.Response, error) {
-	var url = "http://downloads08.f5.com/esd/download.sv?loc=downloads08.f5.com/downloads/"
-	switch platform {
-	case "darwin":
-		url += "60a64c24-957a-40cc-9ca2-daf9f078a409/nginx-meshctl_darwin.gz"
-	case "windows":
-		url += "c88ac035-189e-4ee5-8f26-13580f42e492/nginx-meshctl_windows.exe"
-	case "linux":
-		url += "4c110d24-86be-4452-97b3-f802394a82cd/nginx-meshctl_linux.gz"
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, ErrStatusCheck(resp.Status)
-	}
-
-	return resp, nil
-}
-
-func installBinary(location, platform string, res *http.Response) error {
-	out, err := os.Create(location)
-	if err != nil {
-		return err
-	}
-
-	switch platform {
-	case "darwin":
-		fallthrough
-	case "linux":
-		r, err := gzip.NewReader(res.Body)
-		if err != nil {
-			return err
-		}
-		// Temporary. We'll get rid of this later. 
-		// #nosec
-		_, err = io.Copy(out, r)
-		if err != nil {
-			return err
-		}
-
-		err = r.Close()
-		if err != nil {
-			return err
-		}
-
-		if err = out.Chmod(0755); err != nil {
-			return ErrInstallBinary(err)
-		}
-	case "windows":
-	}
-
-	// Close the response body
-	err = out.Close()
-	if err != nil {
-		return err
-	}
-
-	err = res.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

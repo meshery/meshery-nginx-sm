@@ -6,14 +6,14 @@ proto:
 	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
 docker:
-	docker build -t layer5/meshery-nginx .
+	docker build -t layer5/meshery-nginx-sm .
 
 docker-run:
-	(docker rm -f meshery-nginx) || true
-	docker run --name meshery-nginx -d \
+	(docker rm -f meshery-nginx-sm) || true
+	docker run --name meshery-nginx-sm -d \
 	-p 10007:10007 \
 	-e DEBUG=true \
-	layer5/meshery-nginx
+	layer5/meshery-nginx-sm
 
 run:
 	DEBUG=true go run main.go

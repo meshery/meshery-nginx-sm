@@ -15,17 +15,22 @@ var (
 	ErrClientConfigCode = "nginx_test_code"
 	// ErrStreamEventCode  failure
 	ErrStreamEventCode = "nginx_test_code"
-	// ErrExecDeployCode   failure
-	ErrExecDeployCode = "nginx_test_code"
-	// ErrExecRemoveCode   failure
-	ErrExecRemoveCode = "nginx_test_code"
 	// ErrSampleAppCode    failure
 	ErrSampleAppCode = "nginx_test_code"
 	// ErrOpInvalidCode failure
 	ErrOpInvalidCode = "nginx_test_code"
+	// ErrNilClientCode represents the error code which is
+	// generated when kubernetes client is nil
+	ErrNilClientCode = "replace"
+	// ErrApplyHelmChartCode represents the error generated
+	// during the process of applying helm chart
+	ErrApplyHelmChartCode = "replace"
 
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
+
+	// ErrNilClient represents the error generated when kubernetes client is nil
+	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 )
 
 // ErrInstallNginx is the error for install mesh
@@ -49,16 +54,6 @@ func ErrStreamEvent(err error) error {
 	return errors.New(ErrStreamEventCode, errors.Alert, []string{"Error streaming events"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrExecDeploy is the error for deploying nginx service mesh
-func ErrExecDeploy(err error, des string) error {
-	return errors.New(ErrExecDeployCode, errors.Alert, []string{"Error executing deploy command"}, []string{des, err.Error()}, []string{}, []string{})
-}
-
-// ErrExecRemove is the error for removing nginx service mesh
-func ErrExecRemove(err error, des string) error {
-	return errors.New(ErrExecRemoveCode, errors.Alert, []string{"Error executing remove command", des}, []string{err.Error()}, []string{}, []string{})
-}
-
 // ErrSampleApp is the error for operations on the sample apps
 func ErrSampleApp(err error) error {
 	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error()}, []string{}, []string{})
@@ -67,4 +62,9 @@ func ErrSampleApp(err error) error {
 // ErrCustomOperation is the error for custom operations
 func ErrCustomOperation(err error) error {
 	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with applying custom operation"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrApplyHelmChart is the occurend while applying helm chart
+func ErrApplyHelmChart(err error) error {
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }

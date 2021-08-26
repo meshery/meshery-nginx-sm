@@ -49,7 +49,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.NginxOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version); err != nil {
+			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Nginx service mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
@@ -68,7 +68,9 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				Manifest:    string(operations[opReq.OperationName].Templates[0]),
 				Namespace:   "meshery",
 				Labels:      make(map[string]string),
-				Annotations: make(map[string]string),
+				Annotations: map[string]string{
+					"injector.nsm.nginx.com/auto-inject": "true",
+				},
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)

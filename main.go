@@ -20,14 +20,6 @@ var (
 	serviceName = "nginx-adaptor"
 )
 
-func init() {
-	var err error
-	if err = config.InitialiseNSMCtl(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
 // main is the entrypoint of the adaptor
 func main() {
 
