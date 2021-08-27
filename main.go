@@ -20,6 +20,15 @@ var (
 	serviceName = "nginx-adaptor"
 )
 
+// creates the ~/.meshery directory
+func init() {
+	err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+}
+
 // main is the entrypoint of the adaptor
 func main() {
 
