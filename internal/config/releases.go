@@ -38,7 +38,7 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 
 	// Filter out the rc and alpha releases
 	result := make([]adapter.Version, limit)
-	r, err := regexp.Compile(`Release \d+(\.\d+){2,}$`)
+	r, err := regexp.Compile(`\W`)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
