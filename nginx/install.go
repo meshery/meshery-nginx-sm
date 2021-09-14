@@ -2,6 +2,7 @@ package nginx
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -49,12 +50,20 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		return ErrNilClient
 	}
 
-	nginx.Log.Info("Installing using helm charts...")
-	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+	nginx.Log.Info("Installing nginx-sm ", version, " using helm charts...")
+	chartVersion, err := mesherykube.HelmAppVersionToChartVersion(repo, chart, version)
+	if err != nil {
+		version = strings.TrimPrefix(version, "v")
+		chartVersion, err = mesherykube.HelmAppVersionToChartVersion(repo, chart, version)
+		if err != nil {
+			return ErrApplyHelmChart(err)
+		}
+	}
+	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
 			Chart: chart,
-			Version: version,
+			Version: chartVersion,
 		},
 		Namespace:       namespace,
 		Delete:          del,
