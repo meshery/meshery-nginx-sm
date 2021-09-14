@@ -6,25 +6,25 @@ import (
 
 var (
 	// ErrCustomOperationCode should really have an error code defined by now.
-	ErrCustomOperationCode = "nginx_test_code"
+	ErrCustomOperationCode = "1005"
 	// ErrInstallNginxCode provisioning failure
-	ErrInstallNginxCode = "nginx_test_code"
+	ErrInstallNginxCode = "1006"
 	// ErrMeshConfigCode   service mesh configuration failure
-	ErrMeshConfigCode = "nginx_test_code"
+	ErrMeshConfigCode = "1007"
 	// ErrClientConfigCode adapter configuration failure
-	ErrClientConfigCode = "nginx_test_code"
+	ErrClientConfigCode = "1008"
 	// ErrStreamEventCode  failure
-	ErrStreamEventCode = "nginx_test_code"
+	ErrStreamEventCode = "1009"
 	// ErrSampleAppCode    failure
-	ErrSampleAppCode = "nginx_test_code"
+	ErrSampleAppCode = "1010"
 	// ErrOpInvalidCode failure
-	ErrOpInvalidCode = "nginx_test_code"
+	ErrOpInvalidCode = "1011"
 	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
-	ErrNilClientCode = "replace"
+	ErrNilClientCode = "1012"
 	// ErrApplyHelmChartCode represents the error generated
 	// during the process of applying helm chart
-	ErrApplyHelmChartCode = "replace"
+	ErrApplyHelmChartCode = "1013"
 
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
