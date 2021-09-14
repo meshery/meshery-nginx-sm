@@ -1,5 +1,5 @@
 {
   "name": "nginx",
   "type": "adapter",
-  "next_error_code": 1056
+  "next_error_code": 1000
 }
