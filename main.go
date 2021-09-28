@@ -160,7 +160,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 30,
-		URL:              "" + version + "",
+		URL:              "https://api.github.com/repos/nginxinc/nginx-service-mesh/contents/helm-chart/crds",
 		GenerationMethod: adapter.Manifests,
 		Config: manifests.Config{
 			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
