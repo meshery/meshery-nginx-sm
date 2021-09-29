@@ -94,7 +94,7 @@ func main() {
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
 
 	// Server Initialization
-	log.Info("Adaptor Listening at port: ", service.Port)
+	log.Info("Adapter Listening at port: ", service.Port)
 	err = grpc.Start(service, nil)
 	if err != nil {
 		log.Error(err)
@@ -160,8 +160,8 @@ func registerWorkloads(port string, log logger.Handler) {
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 30,
-		URL:              "https://api.github.com/repos/nginxinc/nginx-service-mesh/contents/helm-chart/crds",
-		GenerationMethod: adapter.Manifests,
+		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-ingress-" + version + ".tgz?raw=true",
+		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
 			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
 			MeshVersion: version,
@@ -179,7 +179,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		},
 		Operation: config.NginxOperation,
 	}); err != nil {
-		log.Info(err.Error())
+		log.Info(nginx.ErrRegisteringWorkload(err))
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
