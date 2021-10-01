@@ -152,35 +152,49 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	release, err := config.GetLatestReleases(1)
 	if err != nil {
-		log.Info("Could not get latest stable release")
+		log.Info("Could not get latest version")
 		return
 	}
 	version := release[0].TagName
 	log.Info("Registering latest workload components for version ", version)
+
+	str, err := ChangeReleaseString()
+	if err != nil {
+		log.Info("Could not change the version string")
+	}
+
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 30,
-		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-ingress-" + version + ".tgz?raw=true",
+		TimeoutInMinutes: 60,
+		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + str + ".tgz?raw=true",
 		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_OPEN_SERVICE_MESH)],
 			MeshVersion: version,
 			Filter: manifests.CrdFilter{
 				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
 				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-				VersionFilter: []string{"$[0]..spec.versions[0]"},
-				GroupFilter:   []string{"$[0]..spec"},
-				SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-				ItrFilter:     "$[?(@.spec.names.kind",
-				ItrSpecFilter: "$[?(@.spec.names.kind",
-				VField:        "name",
-				GField:        "group",
+				VersionFilter: []string{"$..spec.versions[0]", " --o-filter", "$[0]"},
+				GroupFilter:   []string{"$..spec", " --o-filter", "$[]"},
+				SpecFilter:    []string{"$..openAPIV3Schema.properties.spec", " --o-filter", "$[]"},
 			},
 		},
 		Operation: config.NginxOperation,
 	}); err != nil {
-		log.Info(nginx.ErrRegisteringWorkload(err))
+		log.Info(err.Error())
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
+}
+
+func ChangeReleaseString() (string, error) {
+	release, err := config.GetLatestReleases(1)
+	if err != nil {
+		return "", err
+	}
+	res := release[0].TagName
+
+	res1 := strings.Replace(res, "1", "0", 1)
+	version := strings.Replace(res1, "v", "", 1)
+	return version, nil
 }
