@@ -169,7 +169,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + str + ".tgz?raw=true",
 		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_OPEN_SERVICE_MESH)],
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
 			MeshVersion: version,
 			Filter: manifests.CrdFilter{
 				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
@@ -181,7 +181,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		},
 		Operation: config.NginxOperation,
 	}); err != nil {
-		log.Info(err.Error())
+		log.Info(nginx.ErrRegisteringWorkload(err))
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
