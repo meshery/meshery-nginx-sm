@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
@@ -25,6 +26,19 @@ type Asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
+}
+
+type Data struct {
+	Name         string //`json:"name"`
+	Path         string //`json:"path"`
+	Sha          string //`json:"sha"`
+	Size         int    //`json:"size"`
+	Url          string //`json:"url"`
+	Html_url     string //`json:"html_url"`
+	Git_url      string //`json:"git_url"`
+	Download_url string //`json:"download_url"`
+	Types        string //`json:"type"`
+	Link         string //`json:"link"`
 }
 
 // getLatestReleaseNames returns the names of the latest releases
@@ -94,4 +108,27 @@ func GetLatestReleases(releases uint) ([]*Release, error) {
 	}
 
 	return releaseList, nil
+}
+
+func ChangeReleaseString() (string, error) {
+	url := "https://api.github.com/repos/nginxinc/helm-charts/contents/stable?raw=true"
+
+	res, err := http.Get(url)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err.Error())
+	}
+	var p []Data
+	err = json.Unmarshal(body, &p)
+	if err != nil {
+		panic(err.Error())
+	}
+	length := len(p)
+	res1 := strings.Replace(p[length-1].Name, "nginx-service-mesh-", "", 1)
+	version := strings.Replace(res1, ".tgz", "", 1)
+	return version, nil
 }

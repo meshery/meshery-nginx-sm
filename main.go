@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -26,19 +23,6 @@ import (
 var (
 	serviceName = "nginx-adaptor"
 )
-
-type Data struct {
-	Name         string //`json:"name"`
-	Path         string //`json:"path"`
-	Sha          string //`json:"sha"`
-	Size         int    //`json:"size"`
-	Url          string //`json:"url"`
-	Html_url     string //`json:"html_url"`
-	Git_url      string //`json:"git_url"`
-	Download_url string //`json:"download_url"`
-	Types        string //`json:"type"`
-	Link         string //`json:"link"`
-}
 
 // creates the ~/.meshery directory
 func init() {
@@ -174,7 +158,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	version := release[0].TagName
 	log.Info("Registering latest workload components for version ", version)
 
-	str, err := ChangeReleaseString()
+	str, err := config.ChangeReleaseString()
 	if err != nil {
 		log.Info("Could not change the version string")
 	}
@@ -193,35 +177,16 @@ func registerWorkloads(port string, log logger.Handler) {
 				VersionFilter: []string{"$..spec.versions[0]", " --o-filter", "$[0]"},
 				GroupFilter:   []string{"$..spec", " --o-filter", "$[]"},
 				SpecFilter:    []string{"$..openAPIV3Schema.properties.spec", " --o-filter", "$[]"},
+				ItrFilter:     []string{"$[?(@.spec.names.kind"},
+				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
+				VField:        "name",
+				GField:        "group",
 			},
 		},
 		Operation: config.NginxOperation,
 	}); err != nil {
-		log.Info(nginx.ErrRegisteringWorkload(err))
+		log.Error(err)
 		return
 	}
 	log.Info("Latest workload components successfully registered.")
-}
-
-func ChangeReleaseString() (string, error) {
-	url := "https://api.github.com/repos/nginxinc/helm-charts/contents/stable?raw=true"
-
-	res, err := http.Get(url)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		panic(err.Error())
-	}
-	var p []Data
-	err = json.Unmarshal(body, &p)
-	if err != nil {
-		panic(err.Error())
-	}
-	length := len(p)
-	res1 := strings.Replace(p[length-1].Name, "nginx-service-mesh-", "", 1)
-	version := strings.Replace(res1, ".tgz", "", 1)
-	return version, nil
 }
