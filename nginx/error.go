@@ -26,8 +26,6 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1013"
 
-	ErrRegisteringWorkloadCode = "replace"
-
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -69,9 +67,4 @@ func ErrCustomOperation(err error) error {
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
-}
-
-// ErrApplyHelmChart is the occurend while applying helm chart
-func ErrRegisteringWorkload(err error) error {
-	return errors.New(ErrRegisteringWorkloadCode, errors.Alert, []string{"Error occured while registering workload dynamically"}, []string{err.Error()}, []string{}, []string{})
 }
