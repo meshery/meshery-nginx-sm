@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -23,6 +26,19 @@ import (
 var (
 	serviceName = "nginx-adaptor"
 )
+
+type Data struct {
+	Name         string //`json:"name"`
+	Path         string //`json:"path"`
+	Sha          string //`json:"sha"`
+	Size         int    //`json:"size"`
+	Url          string //`json:"url"`
+	Html_url     string //`json:"html_url"`
+	Git_url      string //`json:"git_url"`
+	Download_url string //`json:"download_url"`
+	Types        string //`json:"type"`
+	Link         string //`json:"link"`
+}
 
 // creates the ~/.meshery directory
 func init() {
@@ -188,13 +204,24 @@ func registerWorkloads(port string, log logger.Handler) {
 }
 
 func ChangeReleaseString() (string, error) {
-	release, err := config.GetLatestReleases(1)
-	if err != nil {
-		return "", err
-	}
-	res := release[0].TagName
+	url := "https://api.github.com/repos/nginxinc/helm-charts/contents/stable?raw=true"
 
-	res1 := strings.Replace(res, "1", "0", 1)
-	version := strings.Replace(res1, "v", "", 1)
+	res, err := http.Get(url)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err.Error())
+	}
+	var p []Data
+	err = json.Unmarshal(body, &p)
+	if err != nil {
+		panic(err.Error())
+	}
+	length := len(p)
+	res1 := strings.Replace(p[length-1].Name, "nginx-service-mesh-", "", 1)
+	version := strings.Replace(res1, ".tgz", "", 1)
 	return version, nil
 }
