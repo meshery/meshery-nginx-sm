@@ -1,5 +1,7 @@
 FROM golang:1.13 as builder
 
+ARG VERSION
+ARG GIT_COMMITSHA
 WORKDIR /build
 # Copy the Go Modules manifests
 COPY go.mod go.mod
