@@ -6,7 +6,7 @@ on:
 
 jobs:
   check_nginxsm_version:
-    name: Check Nginx Service Mesh Version
+    name: Check NGINX Service Mesh Version
     if: github.repository == 'meshery/meshery-nginx-sm'
     runs-on: ubuntu-latest
     outputs:
@@ -104,5 +104,5 @@ jobs:
           commit_user_email: ci@layer5.io
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit_options: '--signoff'
-          commit_message: '[Patterns] Pattern components generated from latest Nginx Service Mesh manifests'
+          commit_message: '[Patterns] Pattern components generated from latest NGINX Service Mesh manifests'
           branch: master
