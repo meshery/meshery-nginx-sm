@@ -71,21 +71,17 @@ jobs:
           cd util
           mkdir -p $dirPath
           meshName=nginxsm
-          smpMeshName=NGINXSM
-          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW__VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
+          smpMeshName=NGINX_SERVICE_MESH
+          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_NGINXSM_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
           crds=$(./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
           for t in ${crds[@]}; do
-            nameUpper=`echo $t  | tr -d '"'`NGINXSM
+            nameUpper=`echo $t  | tr -d '"'`
             nameLower=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
             definitionRef=$(printf %s.nginxsm.meshery.layer5.io $nameLower)
             apiVersion=$(./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
             apiGroup=$(./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
             ./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '
-            .[]
-            | .version = "'$NEW_NGINXSM_VERSION'"
-            | ."object-type" = "'$nameUpper'"
-            | ."service-mesh" = "'$meshName'" ' > $dirPath/$nameLower.nginxsm.meshery.layer5io.schema.json
+            jq '.[]' > $dirPath/$nameLower.nginxsm.meshery.layer5io.schema.json
             echo $template |\
             jq '
             ."metadata"."name" = "'$(printf %s.nginxsm $nameUpper)'"
