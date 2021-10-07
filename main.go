@@ -160,7 +160,7 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	str, err := config.ChangeReleaseString()
 	if err != nil {
-		log.Info("Could not change the version string")
+		log.Info("Could not change the version string", err)
 	}
 
 	// Register workloads

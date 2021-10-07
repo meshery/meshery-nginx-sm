@@ -115,17 +115,17 @@ func ChangeReleaseString() (string, error) {
 
 	res, err := http.Get(url)
 	if err != nil {
-		panic(err.Error())
+		return "", ErrGetLatestReleases(err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err.Error())
+		return "", ErrGetLatestReleases(err)
 	}
 	var p []Data
 	err = json.Unmarshal(body, &p)
 	if err != nil {
-		panic(err.Error())
+		return "", ErrUnmarshal(err, "ChangeReleaseString reponse")
 	}
 	length := len(p)
 	res1 := strings.Replace(p[length-1].Name, "nginx-service-mesh-", "", 1)
