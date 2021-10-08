@@ -17,6 +17,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-nginx/internal/config"
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
@@ -149,6 +150,11 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 	}
 
 }
+
+const (
+	repo = "https://helm.nginx.com/stable"
+	chart = "nginx-service-mesh"
+)
 func registerWorkloads(port string, log logger.Handler) {
 	release, err := config.GetLatestReleases(1)
 	if err != nil {
@@ -157,16 +163,20 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 	version := release[0].TagName
 	log.Info("Registering latest workload components for version ", version)
+	//removing v from the version number 
+	res := strings.Replace(version, "v", "", 1)
 
-	str, err := config.ChangeReleaseString()
+	//getting chart version
+	chartVersion, err := mesherykube.HelmAppVersionToChartVersion(repo, chart, res)
 	if err != nil {
 		log.Info("Could not change the version string", err)
 	}
 
+
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 60,
-		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + str + ".tgz?raw=true",
+		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + chartVersion + ".tgz?raw=true",
 		GenerationMethod: adapter.HelmCHARTS,
 		Config: manifests.Config{
 			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],

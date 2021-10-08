@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
 
 // Release is used to save the release informations
+
 type Release struct {
 	ID      int             `json:"id,omitempty"`
 	TagName string          `json:"tag_name,omitempty"`
@@ -110,25 +110,3 @@ func GetLatestReleases(releases uint) ([]*Release, error) {
 	return releaseList, nil
 }
 
-func ChangeReleaseString() (string, error) {
-	url := "https://api.github.com/repos/nginxinc/helm-charts/contents/stable?raw=true"
-
-	res, err := http.Get(url)
-	if err != nil {
-		return "", ErrGetLatestReleases(err)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", ErrGetLatestReleases(err)
-	}
-	var p []Data
-	err = json.Unmarshal(body, &p)
-	if err != nil {
-		return "", ErrUnmarshal(err, "ChangeReleaseString reponse")
-	}
-	length := len(p)
-	res1 := strings.Replace(p[length-1].Name, "nginx-service-mesh-", "", 1)
-	version := strings.Replace(res1, ".tgz", "", 1)
-	return version, nil
-}
