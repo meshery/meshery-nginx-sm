@@ -28,19 +28,6 @@ type Asset struct {
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
-type Data struct {
-	Name         string //`json:"name"`
-	Path         string //`json:"path"`
-	Sha          string //`json:"sha"`
-	Size         int    //`json:"size"`
-	Url          string //`json:"url"`
-	Html_url     string //`json:"html_url"`
-	Git_url      string //`json:"git_url"`
-	Download_url string //`json:"download_url"`
-	Types        string //`json:"type"`
-	Link         string //`json:"link"`
-}
-
 // getLatestReleaseNames returns the names of the latest releases
 // limited by the "limit" parameter. It filters out all the alpha
 // rc releases and sorts the result lexographically (descending)
