@@ -24,6 +24,7 @@ const (
 	ErrGetLatestReleasesCode     = "1002"
 	ErrGetLatestReleaseNamesCode = "1003"
 	ErrStatusCheckCode           = "1004"
+	ErrUnmarshalCode             = "update"
 )
 
 var (
@@ -48,4 +49,8 @@ func ErrInstallBinary(err error) error {
 
 func ErrStatusCheck(status string) error {
 	return errors.New(ErrStatusCheckCode, errors.Alert, []string{"Error Bad Status", status}, []string{}, []string{}, []string{})
+}
+
+func ErrUnmarshal(err error, obj string) error {
+	return errors.New(ErrUnmarshalCode, errors.Alert, []string{"Unable to unmarshal the : ", obj}, []string{err.Error()}, []string{"Object is not a valid json object"}, []string{"Make sure if the object passed is a valid json"})
 }

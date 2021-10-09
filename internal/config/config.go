@@ -14,6 +14,10 @@ import (
 
 const (
 	LabelNamespace = "label-namespace"
+
+	// OAM Metadata constants
+	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
+	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
@@ -23,7 +27,7 @@ var (
 
 	ServerVersion  = status.None
 	ServerGitSHA   = status.None
-	configRootPath  = path.Join(utils.GetHome(), ".meshery")
+	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
 		ServerConfig:   ServerConfig,

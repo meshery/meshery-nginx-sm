@@ -12,6 +12,7 @@ import (
 )
 
 // Release is used to save the release informations
+
 type Release struct {
 	ID      int             `json:"id,omitempty"`
 	TagName string          `json:"tag_name,omitempty"`
@@ -95,3 +96,4 @@ func GetLatestReleases(releases uint) ([]*Release, error) {
 
 	return releaseList, nil
 }
+
