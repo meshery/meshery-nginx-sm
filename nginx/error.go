@@ -26,11 +26,21 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1013"
 
+	ErrParseOAMComponentCode       = "1014"
+	ErrParseOAMConfigCode          = "1015"
+	ErrProcessOAMCode              = "1016"
+	ErrNginxCoreComponentFailCode  = "1017"
+	ErrParseNginxCoreComponentCode = "1018"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
 	// ErrNilClient represents the error generated when kubernetes client is nil
-	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
+	ErrNilClient         = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
+
+	// ErrParseOAMConfig represents the error which is
+	// generated during the OAM configuration parsing
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 )
 
 // ErrInstallNginx is the error for install mesh
@@ -67,4 +77,19 @@ func ErrCustomOperation(err error) error {
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrProcessOAM is a generic error which is thrown when an OAM operations fails
+func ErrProcessOAM(err error) error {
+	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrNginxCoreComponentFail is the error when core Nginx component processing fails
+func ErrNginxCoreComponentFail(err error) error {
+	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in Consul core component"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrParseConsulCoreComponent is the error when Consul core component manifest parsing fails
+func ErrParseNginxCoreComponent(err error) error {
+	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Consul core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
 }
