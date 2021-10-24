@@ -86,10 +86,10 @@ func ErrProcessOAM(err error) error {
 
 // ErrNginxCoreComponentFail is the error when core Nginx component processing fails
 func ErrNginxCoreComponentFail(err error) error {
-	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in Consul core component"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in Nginx core component"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrParseConsulCoreComponent is the error when Consul core component manifest parsing fails
+// ErrParseNginxCoreComponent is the error when Nginx core component manifest parsing fails
 func ErrParseNginxCoreComponent(err error) error {
-	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Consul core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Nginx core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
 }
