@@ -40,7 +40,7 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Could not generate application configuration from given json"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 )
 
 // ErrInstallNginx is the error for install mesh
@@ -86,10 +86,10 @@ func ErrProcessOAM(err error) error {
 
 // ErrNginxCoreComponentFail is the error when core Nginx component processing fails
 func ErrNginxCoreComponentFail(err error) error {
-	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in Nginx core component"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in NGINX Service Mesh core component"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrParseNginxCoreComponent is the error when Nginx core component manifest parsing fails
 func ErrParseNginxCoreComponent(err error) error {
-	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Nginx core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Failure to parse core component manifest for NGINX Service Mesh"}, []string{err.Error()}, []string{}, []string{})
 }
