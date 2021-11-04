@@ -26,10 +26,15 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1013"
 
-	ErrParseOAMComponentCode       = "1014"
-	ErrParseOAMConfigCode          = "1015"
-	ErrProcessOAMCode              = "1016"
-	ErrNginxCoreComponentFailCode  = "1017"
+	//ErrParseOAMComponentCode
+	ErrParseOAMComponentCode = "1014"
+	//ErrParseOAMConfigCode
+	ErrParseOAMConfigCode = "1015"
+	//ErrProcessOAMCode
+	ErrProcessOAMCode = "1016"
+	//ErrNginxCoreComponentFailCode
+	ErrNginxCoreComponentFailCode = "1017"
+	//ErrParseNginxCoreComponentCode
 	ErrParseNginxCoreComponentCode = "1018"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})

@@ -63,6 +63,7 @@ func (h *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (stri
 // CompHandler is the type for functions which can handle OAM components
 type CompHandler func(*Nginx, v1alpha1.Component, bool) (string, error)
 
+//HandleComponents handles the parsed oam components from pattern file
 func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
@@ -97,11 +98,16 @@ func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string
 
 	return mergeMsgs(msgs), nil
 }
+
+// HandleApplicationConfiguration handles the processing of OAM application configuration
 func (h *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
 	for _, comp := range config.Spec.Components {
 		for _, trait := range comp.Traits {
+			/*
+				Handling of different traits will be added here in code
+			*/
 			msgs = append(msgs, fmt.Sprintf("applied trait \"%s\" on service \"%s\"", trait.Name, comp.ComponentName))
 		}
 	}
