@@ -45,7 +45,7 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Could not generate application configuration from given json"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Could not generate application configuration from given json"}, []string{"Invalid OAM config passed in MeshOps request"}, []string{"Confirm that the request has valid OAM config"})
 )
 
 // ErrInstallNginx is the error for install mesh
