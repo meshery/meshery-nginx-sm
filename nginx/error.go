@@ -73,6 +73,7 @@ func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrLoadNamespace is the occurend while applying namespace
 func ErrLoadNamespace(err error, s string ) error{
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occured while applying namespace "}, []string{err.Error()}, []string{}, []string{})
 
