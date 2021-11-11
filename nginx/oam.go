@@ -13,12 +13,12 @@ import (
 )
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (h *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
 		if err != nil {
-			h.Log.Error(ErrParseOAMComponent)
+			nginx.Log.Error(ErrParseOAMComponent)
 			continue
 		}
 
@@ -27,18 +27,18 @@ func (h *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (stri
 
 	config, err := oam.ParseApplicationConfiguration(oamReq.OamConfig)
 	if err != nil {
-		h.Log.Error(ErrParseOAMConfig)
+		nginx.Log.Error(ErrParseOAMConfig)
 	}
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := h.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp)
 		if err != nil {
 			return msg2, ErrProcessOAM(err)
 		}
 
 		// Process components
-		msg1, err := h.HandleComponents(comps, oamReq.DeleteOp)
+		msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp)
 		if err != nil {
 			return msg1 + "\n" + msg2, ErrProcessOAM(err)
 		}
@@ -46,13 +46,13 @@ func (h *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (stri
 		return msg1 + "\n" + msg2, nil
 	}
 	// Process components
-	msg1, err := h.HandleComponents(comps, oamReq.DeleteOp)
+	msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp)
 	if err != nil {
 		return msg1, ErrProcessOAM(err)
 	}
 
 	// Process configuration
-	msg2, err := h.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}
@@ -64,7 +64,7 @@ func (h *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (stri
 type CompHandler func(*Nginx, v1alpha1.Component, bool) (string, error)
 
 //HandleComponents handles the parsed oam components from pattern file
-func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
+func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
 
@@ -74,7 +74,7 @@ func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string
 	for _, comp := range comps {
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
-			msg, err := handleNginxCoreComponents(h, comp, isDel, "", "")
+			msg, err := handleNginxCoreComponents(nginx, comp, isDel, "", "")
 			if err != nil {
 				errs = append(errs, err)
 				continue
@@ -84,7 +84,7 @@ func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string
 			continue
 		}
 
-		msg, err := fnc(h, comp, isDel)
+		msg, err := fnc(nginx, comp, isDel)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -100,7 +100,7 @@ func (h *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string
 }
 
 // HandleApplicationConfiguration handles the processing of OAM application configuration
-func (h *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
+func (nginx *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
 	for _, comp := range config.Spec.Components {
