@@ -26,6 +26,10 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1013"
 
+	// ErrLoadNamespaceCode represents the error generated
+	// during the process of applying namespace
+	ErrLoadNamespaceCode = "replace"
+
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -67,4 +71,9 @@ func ErrCustomOperation(err error) error {
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+func ErrLoadNamespace(err error, s string ) error{
+	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occured while applying namespace "}, []string{err.Error()}, []string{}, []string{})
+
 }

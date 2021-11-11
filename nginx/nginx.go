@@ -59,6 +59,23 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			ee.Details = fmt.Sprintf("The Nginx service mesh is now %s.", stat)
 			hh.StreamInfo(e)
 		}(nginx, e)
+	case internalconfig.LabelNamespace:
+		go func(hh *Nginx, ee *adapter.Event) {
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			operation := "enabled"
+			if opReq.IsDeleteOperation {
+				operation = "removed"
+			}
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
+			ee.Details = fmt.Sprintf("NGINX-INJECTION label %s on %s namespace", operation, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(nginx, e)
 	case common.SmiConformanceOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
