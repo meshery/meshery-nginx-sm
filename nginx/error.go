@@ -26,11 +26,27 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1013"
 
+	//ErrParseOAMComponentCode represents error in parsing oam components
+	ErrParseOAMComponentCode = "1014"
+	//ErrParseOAMConfigCode represents error in parsing oam config
+	ErrParseOAMConfigCode = "1015"
+	//ErrProcessOAMCode represents error which is thrown when an OAM operations fails
+	ErrProcessOAMCode = "1016"
+	//ErrNginxCoreComponentFailCode when core Nginx component processing fails
+	ErrNginxCoreComponentFailCode = "1017"
+	//ErrParseNginxCoreComponentCode when Nginx core component manifest parsing fails
+	ErrParseNginxCoreComponentCode = "1018"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
 	// ErrNilClient represents the error generated when kubernetes client is nil
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
+	//ErrParseOAMComponent represents the error generated when oam component could not be parsed
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
+
+	// ErrParseOAMConfig represents the error which is
+	// generated during the OAM configuration parsing
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Could not generate application configuration from given json"}, []string{"Invalid OAM config passed in MeshOps request"}, []string{"Confirm that the request has valid OAM config"})
 )
 
 // ErrInstallNginx is the error for install mesh
@@ -67,4 +83,19 @@ func ErrCustomOperation(err error) error {
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrProcessOAM is a generic error which is thrown when an OAM operations fails
+func ErrProcessOAM(err error) error {
+	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrNginxCoreComponentFail is the error when core Nginx component processing fails
+func ErrNginxCoreComponentFail(err error) error {
+	return errors.New(ErrNginxCoreComponentFailCode, errors.Alert, []string{"error in NGINX Service Mesh core component"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrParseNginxCoreComponent is the error when Nginx core component manifest parsing fails
+func ErrParseNginxCoreComponent(err error) error {
+	return errors.New(ErrParseNginxCoreComponentCode, errors.Alert, []string{"Failure to parse core component manifest for NGINX Service Mesh"}, []string{err.Error()}, []string{}, []string{})
 }
