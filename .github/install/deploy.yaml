@@ -1,0 +1,7 @@
+name: NginxMesh
+services:
+  nginx:
+    type: NginxMesh
+    namespace: meshery
+    settings:
+      version:  #will be inserted dynamically
