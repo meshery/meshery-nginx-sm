@@ -47,7 +47,7 @@ jobs:
     needs: SetPatternfile
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: grafana,jaeger,nginx-mesh-api,nginx-mesh-metrics,prometheus,
+      expected_pods: grafana,jaeger,nginx-mesh-api,nginx-mesh-metrics,prometheus
       expected_pods_namespaces: meshery,meshery,meshery,meshery,meshery
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-nginx-sm-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-nginx-sm-service.yaml
