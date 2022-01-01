@@ -68,7 +68,6 @@ jobs:
     steps:
       - name: Skip if needed
         run: |
-            echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
             if [ "${{github.event_name }}" == "push" ];then
               echo "version=edge" >> $GITHUB_ENV
             fi
