@@ -65,6 +65,7 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 	} else {
 		act = mesherykube.INSTALL
 	}
+
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
