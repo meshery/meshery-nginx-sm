@@ -88,7 +88,8 @@ jobs:
         run: |
           pretty=$(jq . data.json)
           rm data.json
-
+          
+          mkdir -p ./docs/_compatibility/meshery-nginx-sm
           cd ./docs/_compatibility/meshery-nginx-sm
           touch data.json
           echo $pretty > data.json
