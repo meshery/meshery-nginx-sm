@@ -81,7 +81,7 @@ jobs:
             apiVersion=$(./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
             apiGroup=$(./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
             ./kubeopenapi-jsonschema --location ~/nginxsm.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '.[]' > $dirPath/$nameLower.nginx-sm.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameUpper'"'  > $dirPath/$nameLower.nginx-sm.meshery.layer5io.schema.json
             echo $template |\
             jq '
             ."metadata"."name" = "'$(printf %s.nginx-sm $nameUpper)'"
