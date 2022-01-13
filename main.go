@@ -22,7 +22,9 @@ import (
 )
 
 var (
-	serviceName = "nginx-adaptor"
+	serviceName = "nginx-adapter"
+	version     = "edge"
+	gitsha      = "none"
 )
 
 // creates the ~/.meshery directory
@@ -90,6 +92,8 @@ func main() {
 	service.Handler = handler
 	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
+	service.Version = version
+	service.GitSHA = gitsha
 
 	go registerCapabilities(service.Port, log)        //Registering static capabilities
 	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
@@ -124,7 +128,7 @@ func serviceAddress() string {
 		return svcAddr
 	}
 
-	return "mesherylocal.layer5.io"
+	return "localhost"
 }
 
 func registerCapabilities(port string, log logger.Handler) {
@@ -152,9 +156,10 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 }
 
 const (
-	repo = "https://helm.nginx.com/stable"
+	repo  = "https://helm.nginx.com/stable"
 	chart = "nginx-service-mesh"
 )
+
 func registerWorkloads(port string, log logger.Handler) {
 	release, err := config.GetLatestReleases(1)
 	if err != nil {
@@ -163,7 +168,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 	version := release[0].TagName
 	log.Info("Registering latest workload components for version ", version)
-	//removing v from the version number 
+	//removing v from the version number
 	res := strings.Replace(version, "v", "", 1)
 
 	//getting chart version
@@ -171,7 +176,6 @@ func registerWorkloads(port string, log logger.Handler) {
 	if err != nil {
 		log.Info("Could not change the version string", err)
 	}
-
 
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
