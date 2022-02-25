@@ -1,0 +1,63 @@
+{
+ "description": "Specifications of this circuit breaker.",
+ "properties": {
+  "destination": {
+   "description": "The destination of this circuit breaker.",
+   "properties": {
+    "kind": {
+     "description": "Kind of the destination.",
+     "enum": [
+      "Service"
+     ],
+     "type": "string"
+    },
+    "name": {
+     "description": "Name of the destination.",
+     "type": "string"
+    },
+    "namespace": {
+     "description": "Namespace of the destination.",
+     "type": "string"
+    }
+   },
+   "required": [
+    "name",
+    "kind"
+   ],
+   "type": "object"
+  },
+  "errors": {
+   "description": "The number of errors allowed within the timeout before tripping the circuit.",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "fallback": {
+   "description": "The fallback Service to send traffic to when the circuit is tripped.",
+   "properties": {
+    "port": {
+     "description": "The port of the fallback Service.",
+     "maximum": 65535,
+     "minimum": 0,
+     "type": "integer"
+    },
+    "service": {
+     "description": "The fallback Service to send traffic to when the circuit is tripped.",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "timeoutSeconds": {
+   "description": "The timeout window for errors to occur, and the amount of time to wait before closing the circuit.",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "destination",
+  "errors",
+  "timeoutSeconds"
+ ],
+ "title": "Circuit Breaker",
+ "type": "object"
+}
