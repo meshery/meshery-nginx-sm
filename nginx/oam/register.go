@@ -11,10 +11,9 @@ import (
 )
 
 var (
-	basePath, _      = os.Getwd()
-	WorkloadPath     = filepath.Join(basePath, "templates", "oam", "workloads")
-	traitPath        = filepath.Join(basePath, "templates", "oam", "traits")
-	workloadPathSets = []schemaDefinitionPathSet{}
+	basePath, _  = os.Getwd()
+	WorkloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
+	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
 // AvailableVersions denote the component versions available statically
@@ -123,8 +122,7 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	return res, nil
 }
 func init() {
-	var err error
-	workloadPathSets, err = load(WorkloadPath)
+	_, err := load(WorkloadPath)
 	if err != nil {
 		fmt.Printf("Could not load definitions and schemas for static component registeration: %v", err.Error())
 		return
