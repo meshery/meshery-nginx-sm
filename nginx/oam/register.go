@@ -12,7 +12,7 @@ import (
 
 var (
 	basePath, _ = os.Getwd()
-	//WorkloadPath
+	//WorkloadPath is the path of workload definitions and schemas
 	WorkloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
 	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 )
