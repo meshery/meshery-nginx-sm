@@ -1,0 +1,1 @@
+{"buildTargets":["docker","docker-run","error","proto","protoc-setup","run"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
