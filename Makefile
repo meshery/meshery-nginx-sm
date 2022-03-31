@@ -16,6 +16,7 @@ docker-run:
 	layer5/meshery-nginx-sm
 
 run:
+	go mod tidy; \
 	DEBUG=true go run main.go
 
 .PHONY: error

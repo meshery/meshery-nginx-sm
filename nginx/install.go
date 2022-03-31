@@ -75,6 +75,7 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		Namespace:       namespace,
 		Action:          act,
 		CreateNamespace: true,
+		ReleaseName:     chart,
 	})
 	if err != nil {
 		return ErrApplyHelmChart(err)
