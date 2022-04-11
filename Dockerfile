@@ -14,7 +14,7 @@ COPY main.go main.go
 COPY internal/ internal/
 COPY nginx/ nginx/
 # Build
-RUN GOPROXY=https://proxy.golang.org,direct CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-nginx-sm main.go
+RUN GOPROXY=https://proxy.golang.org,direct CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-nginx-sm main.go
 
 FROM alpine:3.15 as jsonschema-util
 RUN apk add --no-cache curl
