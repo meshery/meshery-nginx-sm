@@ -13,6 +13,7 @@ RUN go mod download
 COPY main.go main.go
 COPY internal/ internal/
 COPY nginx/ nginx/
+COPY build/ build/
 # Build
 RUN GOPROXY=https://proxy.golang.org,direct CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-nginx-sm main.go
 

@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/layer5io/meshery-nginx/build"
 	"github.com/layer5io/meshery-nginx/nginx"
 	"github.com/layer5io/meshery-nginx/nginx/oam"
 	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/utils/manifests"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-nginx/internal/config"
-	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
-	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
@@ -155,52 +154,49 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 
-const (
-	repo  = "https://helm.nginx.com/stable"
-	chart = "nginx-service-mesh"
-)
-
 func registerWorkloads(port string, log logger.Handler) {
-	release, err := config.GetLatestReleases(1)
-	if err != nil {
-		log.Info("Could not get latest version")
+	//First we create and store any new components if available
+	version := build.DefaultVersion
+	url := build.DefaultGenerationURL
+	gm := build.DefaultGenerationMethod
+	// Prechecking to skip comp gen
+	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
+		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
 		return
 	}
-	version := release[0].TagName
+	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
+	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	if os.Getenv("COMP_GEN_URL") != "" && (os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest") {
+		url = os.Getenv("COMP_GEN_URL")
+		gm = os.Getenv("COMP_GEN_METHOD")
+		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
+	}
 	log.Info("Registering latest workload components for version ", version)
-	//removing v from the version number
-	res := strings.Replace(version, "v", "", 1)
-
-	//getting chart version
-	chartVersion, err := mesherykube.HelmAppVersionToChartVersion(repo, chart, res)
-	if err != nil {
-		log.Info("Could not change the version string", err)
-	}
-
 	// Register workloads
-	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
-		TimeoutInMinutes: 60,
-		URL:              "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + chartVersion + ".tgz?raw=true",
-		GenerationMethod: adapter.HelmCHARTS,
-		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
-			MeshVersion: version,
-			Filter: manifests.CrdFilter{
-				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-				VersionFilter: []string{"$..spec.versions[0]", " --o-filter", "$[0]"},
-				GroupFilter:   []string{"$..spec", " --o-filter", "$[]"},
-				SpecFilter:    []string{"$..openAPIV3Schema.properties.spec", " --o-filter", "$[]"},
-				ItrFilter:     []string{"$[?(@.spec.names.kind"},
-				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-				VField:        "name",
-				GField:        "group",
-			},
-		},
-		Operation: config.NginxOperation,
+	if err := adapter.CreateComponents(adapter.StaticCompConfig{
+		URL:     url,
+		Method:  gm,
+		Path:    build.WorkloadPath,
+		DirName: version,
+		Config:  build.NewConfig(version),
 	}); err != nil {
-		log.Error(err)
+		log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
 		return
 	}
-	log.Info("Latest workload components successfully registered.")
+	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
+	log.Info("Component creation completed for version ", version)
+
+	//Now we will register in case
+	log.Info("Registering workloads with Meshery Server for version ", version)
+	originalPath := oam.WorkloadPath
+	oam.WorkloadPath = filepath.Join(originalPath, version)
+	defer resetWorkloadPath(originalPath)
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Info(err.Error())
+		return
+	}
+	log.Info("Successfully registered latest service mesh components with Meshery Server at ", mesheryServerAddress())
+}
+func resetWorkloadPath(orig string) {
+	oam.WorkloadPath = orig
 }
