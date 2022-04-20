@@ -50,13 +50,13 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Nginx, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
 			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
-				e.Summary = fmt.Sprintf("Error while %s Nginx service mesh", stat)
+				e.Summary = fmt.Sprintf("Error while %s NGINX Service Mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("Nginx service mesh %s successfully", stat)
-			ee.Details = fmt.Sprintf("The Nginx service mesh is now %s.", stat)
+			ee.Summary = fmt.Sprintf("NGINX Service Mesh %s successfully", stat)
+			ee.Details = fmt.Sprintf("NGINX Service Mesh is now %s.", stat)
 			hh.StreamInfo(e)
 		}(nginx, e)
 	case internalconfig.LabelNamespace:

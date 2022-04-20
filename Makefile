@@ -11,7 +11,7 @@ docker:
 docker-run:
 	(docker rm -f meshery-nginx-sm) || true
 	docker run --name meshery-nginx-sm -d \
-	-p 10007:10007 \
+	-p 10010:10010 \
 	-e DEBUG=true \
 	layer5/meshery-nginx-sm
 
