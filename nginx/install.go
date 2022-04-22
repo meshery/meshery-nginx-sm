@@ -50,7 +50,6 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		return ErrNilClient
 	}
 
-	nginx.Log.Info("Installing nginx-sm ", version, " using helm charts...")
 	chartVersion, err := mesherykube.HelmAppVersionToChartVersion(repo, chart, version)
 	if err != nil {
 		version = strings.TrimPrefix(version, "v")
@@ -59,6 +58,7 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 			return ErrApplyHelmChart(err)
 		}
 	}
+
 	var act mesherykube.HelmChartAction
 	if del {
 		act = mesherykube.UNINSTALL
@@ -66,7 +66,27 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		act = mesherykube.INSTALL
 	}
 
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+	// Set namespace to "nginx-system" if it is undefined, "default", or "meshery".
+	// NGINX SM should be in it's own namespace, so that's why these namespaces are overridden.
+	forbiddenNamespaces := []string{"", "default", "meshery"}
+	for _, n := range forbiddenNamespaces {
+		if strings.ToLower(namespace) == n {
+			namespace = "nginx-system"
+			break
+		}
+	}
+
+	// Set deployment override flag to disable automatic sidecar injection in the meshery namespace.
+	// This is to prevent Meshery from having connectivy issues with other meshes or non-meshed services.
+	// This is equal to using the Helm flag: --set autoInjection.disabledNamespaces={"meshery"}
+	overrideVal := map[string]interface{}{
+		"autoInjection": map[string]interface{}{
+			"disabledNamespaces": []string{"meshery"},
+		},
+	}
+
+	// Create Helm config used to install charts.
+	c := mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
 			Chart:      chart,
@@ -76,7 +96,12 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		Action:          act,
 		CreateNamespace: true,
 		ReleaseName:     chart,
-	})
+		OverrideValues:  overrideVal,
+	}
+
+	// Install Helm chart.
+	nginx.Log.Info(fmt.Sprintf("Installing NGINX Service Mesh %s using Helm chart: %+v\n", version, c))
+	err = kClient.ApplyHelmChart(c)
 	if err != nil {
 		return ErrApplyHelmChart(err)
 	}
