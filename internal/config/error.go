@@ -24,7 +24,7 @@ const (
 	ErrGetLatestReleasesCode     = "1002"
 	ErrGetLatestReleaseNamesCode = "1003"
 	ErrStatusCheckCode           = "1004"
-	ErrUnmarshalCode             = "1014"
+	ErrUnmarshalCode             = "1005"
 )
 
 var (

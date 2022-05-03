@@ -6,39 +6,39 @@ import (
 
 var (
 	// ErrCustomOperationCode should really have an error code defined by now.
-	ErrCustomOperationCode = "1005"
+	ErrCustomOperationCode = "1006"
 	// ErrInstallNginxCode provisioning failure
-	ErrInstallNginxCode = "1006"
+	ErrInstallNginxCode = "1007"
 	// ErrMeshConfigCode   service mesh configuration failure
-	ErrMeshConfigCode = "1007"
+	ErrMeshConfigCode = "1008"
 	// ErrClientConfigCode adapter configuration failure
-	ErrClientConfigCode = "1008"
+	ErrClientConfigCode = "1009"
 	// ErrStreamEventCode  failure
-	ErrStreamEventCode = "1009"
+	ErrStreamEventCode = "1010"
 	// ErrSampleAppCode    failure
-	ErrSampleAppCode = "1010"
+	ErrSampleAppCode = "1011"
 	// ErrOpInvalidCode failure
-	ErrOpInvalidCode = "1011"
+	ErrOpInvalidCode = "1012"
 	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
-	ErrNilClientCode = "1012"
+	ErrNilClientCode = "1013"
 	// ErrApplyHelmChartCode represents the error generated
 	// during the process of applying helm chart
-	ErrApplyHelmChartCode = "1013"
+	ErrApplyHelmChartCode = "1014"
 
 	//ErrParseOAMComponentCode represents error in parsing oam components
-	ErrParseOAMComponentCode = "1014"
+	ErrParseOAMComponentCode = "1015"
 	//ErrParseOAMConfigCode represents error in parsing oam config
-	ErrParseOAMConfigCode = "1015"
+	ErrParseOAMConfigCode = "1016"
 	//ErrProcessOAMCode represents error which is thrown when an OAM operations fails
-	ErrProcessOAMCode = "1016"
+	ErrProcessOAMCode = "1017"
 	//ErrNginxCoreComponentFailCode when core Nginx component processing fails
-	ErrNginxCoreComponentFailCode = "1017"
+	ErrNginxCoreComponentFailCode = "1018"
 	//ErrParseNginxCoreComponentCode when Nginx core component manifest parsing fails
-	ErrParseNginxCoreComponentCode = "1018"
+	ErrParseNginxCoreComponentCode = "1019"
 
 	//ErrLoadNamespaceCode occur during the process of applying namespace
-	ErrLoadNamespaceCode = "1015"
+	ErrLoadNamespaceCode = "1020"
 
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
@@ -47,12 +47,12 @@ var (
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 
 	// ErrParseOAMComponent represents the error which is
- 	// generated during the OAM component parsing
- 	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while parsing application component in the OAM request made by Meshery Server"}, []string{"Could not unmarshall configuration component received via ProcessOAM gRPC call into a valid Component struct"}, []string{"Check if Meshery Server is creating valid component for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, check if Meshery Server and adapters are referring to same component struct provided in MeshKit."})
+	// generated during the OAM component parsing
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while parsing application component in the OAM request made by Meshery Server"}, []string{"Could not unmarshall configuration component received via ProcessOAM gRPC call into a valid Component struct"}, []string{"Check if Meshery Server is creating valid component for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, check if Meshery Server and adapters are referring to same component struct provided in MeshKit."})
 
- 	// ErrParseOAMConfig represents the error which is
- 	// generated during the OAM configuration parsing
- 	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
+	// ErrParseOAMConfig represents the error which is
+	// generated during the OAM configuration parsing
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
 )
 
 // ErrInstallNginx is the error for install mesh
