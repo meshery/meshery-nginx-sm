@@ -108,8 +108,8 @@ jobs:
           service-mesh: nginx
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
-            nginx-mesh-api:  $(jq '.resources_status."pod/nginx-mesh-api"' data.json)
-            nginx-mesh-metrics: $(jq '.resources_status."pod/nginx-mesh-metrics"' data.json)
+            pod/nginx-mesh-api:  $(jq '.resources_status."pod/nginx-mesh-api"' data.json)
+            pod/nginx-mesh-metrics: $(jq '.resources_status."pod/nginx-mesh-metrics"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
