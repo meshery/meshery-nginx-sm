@@ -45,10 +45,11 @@ jobs:
 
   TestNginxSM:
     needs: SetPatternfile
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
     with:
-      expected_pods: nginx-mesh-api,nginx-mesh-metrics
-      expected_pods_namespaces: nginx-system,nginx-system
+      expected_resources: nginx-mesh-api,nginx-mesh-metrics
+      expected_resources_types: pod,pod
+      expected_resources_namespaces: nginx-system,nginx-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-nginx-sm-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-nginx-sm-service.yaml
       adapter_name: nginx-sm
@@ -107,8 +108,8 @@ jobs:
           service-mesh: nginx
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
-            nginx-mesh-api:  $(jq '.pods_status."nginx-mesh-api"' data.json)
-            nginx-mesh-metrics: $(jq '.pods_status."nginx-mesh-metrics"' data.json)
+            pod/nginx-mesh-api:  $(jq '.resources_status."pod/nginx-mesh-api"' data.json)
+            pod/nginx-mesh-metrics: $(jq '.resources_status."pod/nginx-mesh-metrics"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
