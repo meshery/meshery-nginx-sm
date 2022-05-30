@@ -29,16 +29,19 @@ func NewConfig(version string) manifests.Config {
 	return manifests.Config{
 		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
 		MeshVersion: version,
-		Filter: manifests.CrdFilter{
-			RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-			NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-			VersionFilter: []string{"$..spec.versions[0]", " --o-filter", "$[0]"},
-			GroupFilter:   []string{"$..spec", " --o-filter", "$[]"},
-			SpecFilter:    []string{"$..openAPIV3Schema.properties.spec", " --o-filter", "$[]"},
-			ItrFilter:     []string{"$[?(@.spec.names.kind"},
-			ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-			VField:        "name",
-			GField:        "group",
+		CrdFilter: manifests.NewCueCrdFilter(manifests.ExtractorPaths{
+			NamePath:    "spec.names.kind",
+			IdPath:      "spec.names.kind",
+			VersionPath: "spec.versions[0].name",
+			GroupPath:   "spec.group",
+			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
+		ExtractCrds: func(manifest string) []string {
+			crds := strings.Split(manifest, "---")
+			// trim the spaces
+			for _, crd := range crds {
+				crd = strings.TrimSpace(crd)
+			}
+			return crds
 		},
 	}
 }
