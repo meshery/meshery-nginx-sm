@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
-func (nginx *Nginx) installSampleApp(namespace string, del bool, templates []adapter.Template) (string, error) {
+func (nginx *Nginx) installSampleApp(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
 	st := status.Installing
 
 	if del {
@@ -25,7 +27,7 @@ func (nginx *Nginx) installSampleApp(namespace string, del bool, templates []ada
 			return st, ErrSampleApp(err)
 		}
 
-		err = nginx.applyManifest([]byte(contents), del, namespace)
+		err = nginx.applyManifest([]byte(contents), del, namespace, kubeconfigs)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}
@@ -69,48 +71,112 @@ func readLocalFile(location string) (string, error) {
 }
 
 // LoadToMesh is used to mark deployment for automatic sidecar injection (or not)
-func (nginx *Nginx) LoadToMesh(namespace string, service string, remove bool) error {
-	deploy, err := nginx.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
-	if err != nil {
-		return err
+func (nginx *Nginx) LoadToMesh(namespace string, service string, remove bool, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			deploy, err := kClient.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			if deploy.ObjectMeta.Labels == nil {
+				deploy.ObjectMeta.Labels = map[string]string{}
+			}
+
+			deploy.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "true"
+
+			if remove {
+				deploy.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "false"
+			}
+
+			_, err = kClient.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+		}(config)
 	}
 
-	if deploy.ObjectMeta.Labels == nil {
-		deploy.ObjectMeta.Labels = map[string]string{}
-	}
-	deploy.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "true"
-
-	if remove {
-		deploy.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "false"
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	_, err = nginx.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return mergeErrors(errs)
 }
 
 // LoadNamespaceToMesh is used to mark namespaces for automatic sidecar injection (or not)
-func (nginx *Nginx) LoadNamespaceToMesh(namespace string, remove bool) error {
-	ns, err := nginx.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-	if err != nil {
-		return ErrLoadNamespace(err, namespace)
+func (nginx *Nginx) LoadNamespaceToMesh(namespace string, remove bool, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			ns, err := kClient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			if ns.ObjectMeta.Labels == nil {
+				ns.ObjectMeta.Labels = map[string]string{}
+			}
+			//appmesh.k8s.aws/sidecarInjectorWebhook
+			ns.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "true"
+
+			if remove {
+				ns.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "false"
+			}
+
+			_, err = kClient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+
+		}(config)
 	}
 
-	if ns.ObjectMeta.Labels == nil {
-		ns.ObjectMeta.Labels = map[string]string{}
-	}
-	ns.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "true"
-
-	if remove {
-		ns.ObjectMeta.Labels["injector.nsm.nginx.com/auto-inject"] = "false"
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	_, err = nginx.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-	return ErrLoadNamespace(err, namespace)
+	return ErrLoadNamespace(mergeErrors(errs))
 }

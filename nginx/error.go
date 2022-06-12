@@ -107,7 +107,7 @@ func ErrParseNginxCoreComponent(err error) error {
 }
 
 // ErrLoadNamespace is the occurend while applying namespace
-func ErrLoadNamespace(err error, s string) error {
+func ErrLoadNamespace(err error) error {
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occured while applying namespace "}, []string{err.Error()}, []string{"Trying to access a namespace which is not available"}, []string{"Verify presence of namespace. Confirm Meshery ServiceAccount permissions"})
 
 }
