@@ -10,6 +10,8 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-nginx/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models"
+	"gopkg.in/yaml.v2"
 )
 
 // Nginx defines a model for this adapter
@@ -29,10 +31,16 @@ func New(c adapterconfig.Handler, l logger.Handler, kc adapterconfig.Handler) ad
 }
 
 // ApplyOperation applies the operation on nginx
-func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
+func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+	err := nginx.CreateKubeconfigs(opReq.K8sConfigs)
+	if err != nil {
+		return err
+	}
+	kubeConfigs := opReq.K8sConfigs
+	nginx.SetChannel(hchan);
 
 	operations := make(adapter.Operations)
-	err := nginx.Config.GetObject(adapter.OperationsKey, &operations)
+	err = nginx.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
 	}
@@ -49,7 +57,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.NginxOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
+			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
 				e.Summary = fmt.Sprintf("Error while %s NGINX Service Mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
@@ -61,7 +69,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(nginx, e)
 	case internalconfig.LabelNamespace:
 		go func(hh *Nginx, ee *adapter.Event) {
-			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
 				operation = "removed"
@@ -102,7 +110,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
@@ -115,7 +123,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(nginx, e)
 	case common.CustomOperation:
 		go func(hh *Nginx, ee *adapter.Event) {
-			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
 				e.Details = err.Error()
@@ -131,4 +139,49 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	}
 
 	return nil
+}
+
+//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+func (nginx *Nginx) CreateKubeconfigs(kubeconfigs []string) error {
+	var errs = make([]error, 0)
+	for _, kubeconfig := range kubeconfigs {
+		kconfig := models.Kubeconfig{}
+		err := yaml.Unmarshal([]byte(kubeconfig), &kconfig)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// To have control over what exactly to take in on kubeconfig
+		nginx.KubeconfigHandler.SetKey("kind", kconfig.Kind)
+		nginx.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
+		nginx.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
+		err = nginx.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = nginx.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = nginx.KubeconfigHandler.SetObject("users", kconfig.Users)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = nginx.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
 }

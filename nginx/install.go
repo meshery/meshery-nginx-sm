@@ -3,6 +3,7 @@ package nginx
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -17,7 +18,7 @@ const (
 
 // Installs NGINX service mesh using helm charts.
 // Unlike other adapters, doesn't keep CLI as a fallback method
-func (nginx *Nginx) installNginx(del bool, version, namespace string) (string, error) {
+func (nginx *Nginx) installNginx(del bool, version, namespace string, kubeconfigs []string) (string, error) {
 	nginx.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	nginx.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	nginx.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -32,7 +33,7 @@ func (nginx *Nginx) installNginx(del bool, version, namespace string) (string, e
 		return st, ErrMeshConfig(err)
 	}
 
-	err = nginx.applyHelmChart(del, version, namespace)
+	err = nginx.applyHelmChart(del, version, namespace, kubeconfigs)
 	if err != nil {
 		nginx.Log.Error(ErrInstallNginx(err))
 		return st, ErrInstallNginx(err)
@@ -44,12 +45,7 @@ func (nginx *Nginx) installNginx(del bool, version, namespace string) (string, e
 	return status.Installed, nil
 }
 
-func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
-	kClient := nginx.MesheryKubeclient
-	if kClient == nil {
-		return ErrNilClient
-	}
-
+func (nginx *Nginx) applyHelmChart(del bool, version, namespace string, kubeconfigs []string) error {
 	chartVersion, err := mesherykube.HelmAppVersionToChartVersion(repo, chart, version)
 	if err != nil {
 		version = strings.TrimPrefix(version, "v")
@@ -99,25 +95,79 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string) error {
 		OverrideValues:  overrideVal,
 	}
 
-	// Install Helm chart.
 	nginx.Log.Info(fmt.Sprintf("Installing NGINX Service Mesh %s using Helm chart: %+v\n", version, c))
-	err = kClient.ApplyHelmChart(c)
-	if err != nil {
-		return ErrApplyHelmChart(err)
+
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+	
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			// Install Helm chart.
+			err = kClient.ApplyHelmChart(c)
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+		}(config)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	return nil
+	mergedErrors := mergeErrors(errs)
+	return ErrApplyHelmChart(mergedErrors)
 }
 
-func (nginx *Nginx) applyManifest(manifest []byte, isDel bool, namespace string) error {
-	err := nginx.MesheryKubeclient.ApplyManifest(manifest, mesherykube.ApplyOptions{
-		Namespace: namespace,
-		Update:    true,
-		Delete:    isDel,
-	})
-	if err != nil {
-		return err
+func (nginx *Nginx) applyManifest(manifest []byte, isDel bool, namespace string, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			err = kClient.ApplyManifest(manifest, mesherykube.ApplyOptions{
+				Namespace: namespace,
+				Update: true,
+				Delete: isDel,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+		}(config)
 	}
 
-	return nil
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return mergeErrors(errs)
 }

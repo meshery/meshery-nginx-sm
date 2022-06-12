@@ -8,12 +8,18 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-nginx/nginx/oam"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
-	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	"gopkg.in/yaml.v2"
 )
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
+	nginx.SetChannel(hchan)
+	err := nginx.CreateKubeconfigs(oamReq.K8sConfigs)
+	if err != nil {
+		return "", err
+	}
+	kubeConfigs := oamReq.K8sConfigs
+
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
@@ -32,13 +38,13 @@ func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeConfigs)
 		if err != nil {
 			return msg2, ErrProcessOAM(err)
 		}
 
 		// Process components
-		msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp)
+		msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp, kubeConfigs)
 		if err != nil {
 			return msg1 + "\n" + msg2, ErrProcessOAM(err)
 		}
@@ -46,13 +52,13 @@ func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 		return msg1 + "\n" + msg2, nil
 	}
 	// Process components
-	msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp)
+	msg1, err := nginx.HandleComponents(comps, oamReq.DeleteOp, kubeConfigs)
 	if err != nil {
 		return msg1, ErrProcessOAM(err)
 	}
 
 	// Process configuration
-	msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	msg2, err := nginx.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeConfigs)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}
@@ -61,10 +67,10 @@ func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 }
 
 // CompHandler is the type for functions which can handle OAM components
-type CompHandler func(*Nginx, v1alpha1.Component, bool) (string, error)
+type CompHandler func(*Nginx, v1alpha1.Component, bool, []string) (string, error)
 
 //HandleComponents handles the parsed oam components from pattern file
-func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
+func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
 
@@ -74,7 +80,7 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	for _, comp := range comps {
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
-			msg, err := handleNginxCoreComponents(nginx, comp, isDel, "", "")
+			msg, err := handleNginxCoreComponents(nginx, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
 				errs = append(errs, err)
 				continue
@@ -84,7 +90,7 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 			continue
 		}
 
-		msg, err := fnc(nginx, comp, isDel)
+		msg, err := fnc(nginx, comp, isDel, kubeconfigs)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -100,7 +106,7 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 }
 
 // HandleApplicationConfiguration handles the processing of OAM application configuration
-func (nginx *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
+func (nginx *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
 	for _, comp := range config.Spec.Components {
@@ -119,13 +125,13 @@ func (nginx *Nginx) HandleApplicationConfiguration(config v1alpha1.Configuration
 	return mergeMsgs(msgs), nil
 }
 
-func handleComponentNginxMesh(c *Nginx, comp v1alpha1.Component, isDelete bool) (string, error) {
+func handleComponentNginxMesh(c *Nginx, comp v1alpha1.Component, isDelete bool, kubeconfigs []string) (string, error) {
 	// Get the Nginx version from the settings
 	// we are sure that the version of Nginx would be present
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Settings["version"].(string)
 
-	msg, err := c.installNginx(isDelete, version, comp.Namespace)
+	msg, err := c.installNginx(isDelete, version, comp.Namespace, kubeconfigs)
 	if err != nil {
 		return fmt.Sprintf("%s: %s", comp.Name, msg), err
 	}
@@ -138,7 +144,8 @@ func handleNginxCoreComponents(
 	comp v1alpha1.Component,
 	isDel bool,
 	apiVersion,
-	kind string) (string, error) {
+	kind string,
+	kubeconfigs []string) (string, error) {
 	if apiVersion == "" {
 		apiVersion = getAPIVersionFromComponent(comp)
 		if apiVersion == "" {
@@ -176,11 +183,7 @@ func handleNginxCoreComponents(
 		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	}
 
-	return msg, c.MesheryKubeclient.ApplyManifest(yamlByt, mesherykube.ApplyOptions{
-		Namespace: comp.Namespace,
-		Update:    true,
-		Delete:    isDel,
-	})
+	return msg, c.applyManifest(yamlByt, isDel, comp.Namespace, kubeconfigs)
 }
 func getAPIVersionFromComponent(comp v1alpha1.Component) string {
 	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
