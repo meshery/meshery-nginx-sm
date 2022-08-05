@@ -129,7 +129,11 @@ func handleComponentNginxMesh(c *Nginx, comp v1alpha1.Component, isDelete bool, 
 	// Get the Nginx version from the settings
 	// we are sure that the version of Nginx would be present
 	// because the configuration is already validated against the schema
-	version := comp.Spec.Settings["version"].(string)
+	version := comp.Spec.Version
+	if version == "" {
+		return "", fmt.Errorf("pass valid version inside service for Nginx SM installation")
+	}
+	//TODO: When no version is passed in service, use the latest Nginx SM version
 
 	msg, err := c.installNginx(isDelete, version, comp.Namespace, kubeconfigs)
 	if err != nil {
