@@ -9,6 +9,7 @@ import (
 	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-nginx/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"gopkg.in/yaml.v2"
@@ -51,6 +52,9 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		Operationid: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     status.None,
+		Component:   internalconfig.ServerConfig["type"],
+		ComponentName: internalconfig.ServerConfig["name"],
+
 	}
 
 	switch opReq.OperationName {
@@ -58,9 +62,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Nginx, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
 			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
-				e.Summary = fmt.Sprintf("Error while %s NGINX Service Mesh", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s NGINX Service Mesh", stat)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("NGINX Service Mesh %s successfully", stat)
@@ -75,9 +78,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				operation = "removed"
 			}
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
@@ -98,9 +100,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				},
 			})
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s %s test", status.Running, name)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
@@ -112,9 +113,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
@@ -125,9 +125,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Nginx, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s custom operation", stat)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
@@ -135,7 +134,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(nginx, e)
 	default:
-		nginx.StreamErr(e, ErrOpInvalid)
+		nginx.streamErr("Invalid operation", e, ErrOpInvalid)
 	}
 
 	return nil
@@ -184,4 +183,14 @@ func (nginx *Nginx) CreateKubeconfigs(kubeconfigs []string) error {
 		return nil
 	}
 	return mergeErrors(errs)
+}
+
+
+func(nginx *Nginx) streamErr(summary string, e *adapter.Event, err error) {
+	e.Summary = summary
+	e.Details = err.Error()
+	e.ErrorCode = errors.GetCode(err)
+	e.ProbableCause = errors.GetCause(err)
+	e.SuggestedRemediation = errors.GetRemedy(err)
+	nginx.StreamErr(e, err)
 }
