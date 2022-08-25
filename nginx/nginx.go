@@ -7,6 +7,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
+	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-nginx/internal/config"
 	"github.com/layer5io/meshkit/errors"
@@ -48,8 +49,8 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 
 	stat := status.Deploying
 
-	e := &adapter.Event{
-		Operationid: opReq.OperationID,
+	e := &meshes.EventsResponse{
+		OperationId: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     status.None,
 		Component:   internalconfig.ServerConfig["type"],
@@ -59,7 +60,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 
 	switch opReq.OperationName {
 	case internalconfig.NginxOperation:
-		go func(hh *Nginx, ee *adapter.Event) {
+		go func(hh *Nginx, ee *meshes.EventsResponse) {
 			version := string(operations[opReq.OperationName].Versions[0])
 			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
 				summary := fmt.Sprintf("Error while %s NGINX Service Mesh", stat)
@@ -71,7 +72,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(nginx, e)
 	case internalconfig.LabelNamespace:
-		go func(hh *Nginx, ee *adapter.Event) {
+		go func(hh *Nginx, ee *meshes.EventsResponse) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
@@ -87,11 +88,11 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(nginx, e)
 	case common.SmiConformanceOperation:
-		go func(hh *Nginx, ee *adapter.Event) {
+		go func(hh *Nginx, ee *meshes.EventsResponse) {
 			name := operations[opReq.OperationName].Description
 			_, err := hh.RunSMITest(adapter.SMITestOptions{
 				Ctx:         context.TODO(),
-				OperationID: ee.Operationid,
+				OperationID: ee.OperationId,
 				Manifest:    string(operations[opReq.OperationName].Templates[0]),
 				Namespace:   "meshery",
 				Labels:      make(map[string]string),
@@ -109,7 +110,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(nginx, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
-		go func(hh *Nginx, ee *adapter.Event) {
+		go func(hh *Nginx, ee *meshes.EventsResponse) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
@@ -122,7 +123,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(nginx, e)
 	case common.CustomOperation:
-		go func(hh *Nginx, ee *adapter.Event) {
+		go func(hh *Nginx, ee *meshes.EventsResponse) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				summary := fmt.Sprintf("Error while %s custom operation", stat)
@@ -186,7 +187,7 @@ func (nginx *Nginx) CreateKubeconfigs(kubeconfigs []string) error {
 }
 
 
-func(nginx *Nginx) streamErr(summary string, e *adapter.Event, err error) {
+func(nginx *Nginx) streamErr(summary string, e *meshes.EventsResponse, err error) {
 	e.Summary = summary
 	e.Details = err.Error()
 	e.ErrorCode = errors.GetCode(err)
