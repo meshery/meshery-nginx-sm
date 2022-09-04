@@ -18,6 +18,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-nginx/internal/config"
+	"github.com/layer5io/meshkit/utils/events"
 )
 
 var (
@@ -85,11 +86,12 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := nginx.New(cfg, log, kubeconfigHandler)
+	e := events.NewEventStreamer()
+	handler := nginx.New(cfg, log, kubeconfigHandler, e)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
-	service.Channel = make(chan interface{}, 10)
+	service.EventStreamer = e
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
