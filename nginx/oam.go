@@ -95,7 +95,7 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 		if !ok {
 			msg, err := handleNginxCoreComponents(nginx, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
-				ee.Summary = fmt.Sprint("Error while %s %s", stat1, comp.Spec.Type)
+				ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
 				nginx.streamErr(ee.Summary, ee, err)
 				errs = append(errs, err)
 				continue
