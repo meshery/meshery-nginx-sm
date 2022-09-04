@@ -8,15 +8,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/meshes"
+	"github.com/layer5io/meshery-nginx/internal/config"
 	"github.com/layer5io/meshery-nginx/nginx/oam"
-	"github.com/layer5io/meshery-traefik-mesh/internal/config"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
-	nginx.SetChannel(hchan)
+func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	err := nginx.CreateKubeconfigs(oamReq.K8sConfigs)
 	if err != nil {
 		return "", err
@@ -97,13 +96,13 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 			msg, err := handleNginxCoreComponents(nginx, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
 				ee.Summary = fmt.Sprint("Error while %s %s", stat1, comp.Spec.Type)
-				mesh.streamErr(ee.Summary, ee, err)
+				nginx.streamErr(ee.Summary, ee, err)
 				errs = append(errs, err)
 				continue
 			}
 			ee.Summary = fmt.Sprintf("%s %s successfully", comp.Spec.Type, stat2)
 			ee.Details = fmt.Sprintf("The %s is now %s.", comp.Spec.Type, stat2)
-			mesh.StreamInfo(ee)
+			nginx.StreamInfo(ee)
 			msgs = append(msgs, msg)
 			continue
 		}
@@ -111,13 +110,13 @@ func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 		msg, err := fnc(nginx, comp, isDel, kubeconfigs)
 		if err != nil {
 			ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
-			mesh.streamErr(ee.Summary, ee, err)
+			nginx.streamErr(ee.Summary, ee, err)
 			errs = append(errs, err)
 			continue
 		}
 		ee.Summary = fmt.Sprintf("%s %s %s successfully", comp.Name, comp.Spec.Type, stat2)
 		ee.Details = fmt.Sprintf("The %s %s is now %s.", comp.Name, comp.Spec.Type, stat2)
-		mesh.StreamInfo(ee)
+		nginx.StreamInfo(ee)
 		msgs = append(msgs, msg)
 	}
 	if err := mergeErrors(errs); err != nil {
