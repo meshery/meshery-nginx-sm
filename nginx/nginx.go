@@ -141,7 +141,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	return nil
 }
 
-//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+// CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
 func (nginx *Nginx) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {
