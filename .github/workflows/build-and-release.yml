@@ -1,4 +1,4 @@
-name: Meshery Adapter for NGINX Build and Releaser
+name: Meshery-Nginx SM Build and Release
 on:
   push:
     branches:

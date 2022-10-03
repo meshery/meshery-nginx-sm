@@ -13,11 +13,11 @@ jobs:
     name: Check & Review code
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          fetch-depth: 1
-      - name: Run golangci-lint
+          go-version: 1.19
+      - uses: actions/checkout@v3
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
@@ -48,12 +48,18 @@ jobs:
     name: Static check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 1
-    - uses: dominikh/staticcheck-action@v1.2.0
-      with:
-        version: "2022.1.1"
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - uses: dominikh/staticcheck-action@v1.2.0
+        with:
+          install-go: false
+          version: "2022.1"
   vet:
     name: Vet
     runs-on: ubuntu-latest

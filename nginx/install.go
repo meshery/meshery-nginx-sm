@@ -73,7 +73,7 @@ func (nginx *Nginx) applyHelmChart(del bool, version, namespace string, kubeconf
 	}
 
 	// Set deployment override flag to disable automatic sidecar injection in the meshery namespace.
-	// This is to prevent Meshery from having connectivy issues with other meshes or non-meshed services.
+	// This is to prevent Meshery from having connectivity issues with other meshes or non-meshed services.
 	// This is equal to using the Helm flag: --set autoInjection.disabledNamespaces={"meshery"}
 	overrideVal := map[string]interface{}{
 		"autoInjection": map[string]interface{}{
@@ -160,7 +160,6 @@ func (nginx *Nginx) applyManifest(manifest []byte, isDel bool, namespace string,
 				errMx.Unlock()
 				return
 			}
-
 		}(config)
 	}
 

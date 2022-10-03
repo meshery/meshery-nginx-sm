@@ -79,7 +79,7 @@ func (nginx *Nginx) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				operation = "removed"
 			}
 			if err != nil {
-				summary := fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				summary := fmt.Sprintf("Error while labeling %s", opReq.Namespace)
 				hh.streamErr(summary, ee, err)
 				return
 			}

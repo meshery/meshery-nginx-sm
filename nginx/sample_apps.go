@@ -113,7 +113,6 @@ func (nginx *Nginx) LoadToMesh(namespace string, service string, remove bool, ku
 				errMx.Unlock()
 				return
 			}
-
 		}(config)
 	}
 
@@ -168,7 +167,6 @@ func (nginx *Nginx) LoadNamespaceToMesh(namespace string, remove bool, kubeconfi
 				errMx.Unlock()
 				return
 			}
-
 		}(config)
 	}
 

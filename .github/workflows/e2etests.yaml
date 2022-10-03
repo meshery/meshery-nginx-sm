@@ -1,4 +1,4 @@
-name: Test Nginx Adapter - control plane and addons
+name: E2E Test Nginx SM Adapter - Control Plane and Addons
 
 on:
   push:
