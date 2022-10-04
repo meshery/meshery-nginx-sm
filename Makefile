@@ -1,10 +1,3 @@
-protoc-setup:
-	cd meshes
-	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
-
-proto:	
-	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
-
 docker:
 	docker build -t layer5/meshery-nginx-sm .
 
@@ -18,7 +11,7 @@ docker-run:
 
 ## Build and run Adapter locally
 run:
-	go$(v) mod tidy -compat=1.17; \
+	go$(v) mod tidy; \
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 run-force-dynamic-reg:

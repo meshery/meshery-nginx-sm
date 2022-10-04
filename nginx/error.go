@@ -52,13 +52,12 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config received via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
 )
 
 // ErrInstallNginx is the error for install mesh
 func ErrInstallNginx(err error) error {
 	return errors.New(ErrInstallNginxCode, errors.Alert, []string{"Error with Nginx installation"}, []string{err.Error()}, []string{}, []string{})
-
 }
 
 // ErrMeshConfig is the error for mesh config
@@ -88,7 +87,7 @@ func ErrCustomOperation(err error) error {
 
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
-	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occurred while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
@@ -108,6 +107,5 @@ func ErrParseNginxCoreComponent(err error) error {
 
 // ErrLoadNamespace is the occurend while applying namespace
 func ErrLoadNamespace(err error) error {
-	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occured while applying namespace "}, []string{err.Error()}, []string{"Trying to access a namespace which is not available"}, []string{"Verify presence of namespace. Confirm Meshery ServiceAccount permissions"})
-
+	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error occurred while applying namespace "}, []string{err.Error()}, []string{"Trying to access a namespace which is not available"}, []string{"Verify presence of namespace. Confirm Meshery ServiceAccount permissions"})
 }

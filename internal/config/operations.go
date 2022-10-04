@@ -6,7 +6,6 @@ import (
 )
 
 func getOperations(dev adapter.Operations) adapter.Operations {
-
 	versions, _ := getLatestReleaseNames(3)
 
 	dev[NginxOperation] = &adapter.Operation{

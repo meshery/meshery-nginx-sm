@@ -3,15 +3,15 @@ package nginx
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (nginx *Nginx) installSampleApp(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
@@ -62,7 +62,7 @@ func readLocalFile(location string) (string, error) {
 
 	// Need to support variable file locations hence
 	// #nosec
-	data, err := ioutil.ReadFile(location)
+	data, err := os.ReadFile(location)
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +113,6 @@ func (nginx *Nginx) LoadToMesh(namespace string, service string, remove bool, ku
 				errMx.Unlock()
 				return
 			}
-
 		}(config)
 	}
 
@@ -168,8 +167,6 @@ func (nginx *Nginx) LoadNamespaceToMesh(namespace string, remove bool, kubeconfi
 				errMx.Unlock()
 				return
 			}
-
-
 		}(config)
 	}
 

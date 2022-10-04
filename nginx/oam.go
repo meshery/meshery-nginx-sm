@@ -71,7 +71,7 @@ func (nginx *Nginx) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 // CompHandler is the type for functions which can handle OAM components
 type CompHandler func(*Nginx, v1alpha1.Component, bool, []string) (string, error)
 
-//HandleComponents handles the parsed oam components from pattern file
+// HandleComponents handles the parsed oam components from pattern file
 func (nginx *Nginx) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
