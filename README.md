@@ -43,7 +43,7 @@ NGINX Service Mesh (NSM), a fully integrated lightweight service mesh that lever
 <h2><a name="contributing"></a><a name="community"></a> <a href="http://slack.layer5.io">Community</a> and <a href="https://github.com/layer5io/layer5/blob/master/CONTRIBUTING.md">Contributing</a></h2>
 Our projects are community-built and welcome collaboration. 👍 Be sure to see the <a href="https://docs.google.com/document/d/17OPtDE_rdnPQxmk2Kauhm3GwXF1R5dZ3Cj8qZLKdo5E/edit">Layer5 Community Welcome Guide</a> for a tour of resources available to you and jump into our <a href="http://slack.layer5.io">Slack</a>! Contributors are expected to adhere to the <a href="https://github.com/cncf/foundation/blob/master/code-of-conduct.md">CNCF Code of Conduct</a>.
 
-<a href="https://meshery.io/community">
+<a href="https://slack.layer5.io">
 
 <picture align="right">
   <source media="(prefers-color-scheme: dark)" srcset="./img/readme/slack-dark-128.png"  width="110px" align="right" style="margin-left:10px;margin-top:10px;">
@@ -52,7 +52,7 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 </picture>
 </a>
 
-<a href="http://slack.layer5.io">
+<a href="https://meshery.io/community">
 <img alt="Layer5 Service Mesh Community" src="img/readme/community.svg" style="margin-right:8px;padding-top:5px;" width="140px" align="left"/></a>
 
 <p>
