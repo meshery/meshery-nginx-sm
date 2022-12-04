@@ -1,0 +1,95 @@
+{
+ "description": "TrafficTargetSpec is the specification of a TrafficTarget",
+ "properties": {
+  "destination": {
+   "description": "Selector is the pod or group of pods to allow ingress traffic",
+   "properties": {
+    "kind": {
+     "description": "Kind is the type of Subject to allow ingress (ServiceAccount | Group)",
+     "type": "string"
+    },
+    "name": {
+     "description": "Name of the Subject, i.e. ServiceAccountName",
+     "type": "string"
+    },
+    "namespace": {
+     "description": "Namespace where the Subject is deployed",
+     "type": "string"
+    },
+    "port": {
+     "description": "Port defines a TCP port to apply the TrafficTarget to",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "kind",
+    "name"
+   ],
+   "type": "object"
+  },
+  "rules": {
+   "description": "Rules are the traffic rules to allow (HTTPRoutes | TCPRoute)",
+   "items": {
+    "description": "TrafficTargetRule is the TrafficSpec to allow for a TrafficTarget",
+    "properties": {
+     "kind": {
+      "description": "Kind is the kind of TrafficSpec to allow",
+      "type": "string"
+     },
+     "matches": {
+      "description": "Matches is a list of TrafficSpec routes to allow traffic for",
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "name": {
+      "description": "Name of the TrafficSpec to use",
+      "type": "string"
+     }
+    },
+    "required": [
+     "kind",
+     "name"
+    ],
+    "type": "object"
+   },
+   "type": "array"
+  },
+  "sources": {
+   "description": "Sources are the pod or group of pods to allow ingress traffic",
+   "items": {
+    "description": "IdentityBindingSubject is a Kubernetes objects which should be allowed access to the TrafficTarget",
+    "properties": {
+     "kind": {
+      "description": "Kind is the type of Subject to allow ingress (ServiceAccount | Group)",
+      "type": "string"
+     },
+     "name": {
+      "description": "Name of the Subject, i.e. ServiceAccountName",
+      "type": "string"
+     },
+     "namespace": {
+      "description": "Namespace where the Subject is deployed",
+      "type": "string"
+     },
+     "port": {
+      "description": "Port defines a TCP port to apply the TrafficTarget to",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "kind",
+     "name"
+    ],
+    "type": "object"
+   },
+   "type": "array"
+  }
+ },
+ "required": [
+  "destination"
+ ],
+ "title": "Traffic Target",
+ "type": "object"
+}
