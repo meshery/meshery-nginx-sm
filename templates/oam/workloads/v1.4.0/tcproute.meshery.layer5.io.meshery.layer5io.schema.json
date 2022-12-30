@@ -1,0 +1,5 @@
+{
+ "description": "TCPRouteSpec defines the desired state of TCPRoute",
+ "title": "TCP Route",
+ "type": "object"
+}

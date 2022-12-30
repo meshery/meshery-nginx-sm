@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-nginx/build"
 	"github.com/layer5io/meshery-nginx/nginx"
 	"github.com/layer5io/meshery-nginx/nginx/oam"
@@ -25,6 +26,7 @@ var (
 	serviceName = "nginx-adapter"
 	version     = "edge"
 	gitsha      = "none"
+	instanceID  = uuid.NewString()
 )
 
 // creates the ~/.meshery directory
@@ -141,6 +143,11 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+
+	// Register meshmodel components
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
+		log.Info(err.Error())
+	}
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
@@ -174,11 +181,13 @@ func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Registering latest workload components for version ", version)
 	// Register workloads
 	if err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:     url,
-		Method:  gm,
-		Path:    build.WorkloadPath,
-		DirName: version,
-		Config:  build.NewConfig(version),
+		URL:             url,
+		Method:          gm,
+		OAMPath:         build.WorkloadPath,
+		MeshModelPath:   build.MeshModelPath,
+		MeshModelConfig: build.MeshModelConfig,
+		DirName:         version,
+		Config:          build.NewConfig(version),
 	}); err != nil {
 		log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
 		return
