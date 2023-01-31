@@ -68,6 +68,6 @@ func init() {
 		return
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
-	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/nginxinc/nginx-service-mesh/" + LatestVersion + ""
+	DefaultGenerationMethod = adapter.HelmCHARTS
+	DefaultGenerationURL = "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + LatestVersion + ".tgz?raw=true"
 }
