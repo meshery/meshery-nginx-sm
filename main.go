@@ -207,7 +207,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		log.Info(err.Error())
 		return
 	}
-	log.Info("Successfully registered latest workload components for version ", version)
+	log.Info("Successfully registered latest components for version ", version)
 }
 func resetWorkloadPath(orig string) {
 	oam.WorkloadPath = orig
