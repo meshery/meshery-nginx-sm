@@ -166,7 +166,7 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	//First we create and store any new components if available
 	log.Info("Registering latest components with Meshery Server")
-	version := build.DefaultVersion
+	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
 	// Prechecking to skip comp gen
