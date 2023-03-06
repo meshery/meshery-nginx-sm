@@ -149,7 +149,7 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
 	}
-	log.Info("Successfully registered static components with Meshery Server.")
+	log.Info("Registered static components with Meshery Server.")
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
