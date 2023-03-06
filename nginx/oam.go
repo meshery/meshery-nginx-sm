@@ -172,14 +172,14 @@ func handleNginxCoreComponents(
 	kind string,
 	kubeconfigs []string) (string, error) {
 	if apiVersion == "" {
-		apiVersion = getAPIVersionFromComponent(comp)
+		apiVersion = v1alpha1.GetAPIVersionFromComponent(comp)
 		if apiVersion == "" {
 			return "", ErrNginxCoreComponentFail(fmt.Errorf("failed to get API Version for: %s", comp.Name))
 		}
 	}
 
 	if kind == "" {
-		kind = getKindFromComponent(comp)
+		kind = v1alpha1.GetKindFromComponent(comp)
 		if kind == "" {
 			return "", ErrNginxCoreComponentFail(fmt.Errorf("failed to get kind for: %s", comp.Name))
 		}
@@ -209,12 +209,6 @@ func handleNginxCoreComponents(
 	}
 
 	return msg, c.applyManifest(yamlByt, isDel, comp.Namespace, kubeconfigs)
-}
-func getAPIVersionFromComponent(comp v1alpha1.Component) string {
-	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
-}
-func getKindFromComponent(comp v1alpha1.Component) string {
-	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sKind"]
 }
 
 func mergeErrors(errs []error) error {
