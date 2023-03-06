@@ -2,6 +2,6 @@ name: NginxMesh
 services:
   nginx:
     type: NginxMesh
-    namespace: meshery
+    namespace: nginx-system
     version:  #will be inserted dynamically
       
