@@ -135,6 +135,7 @@ func serviceAddress() string {
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
+	log.Info("Registering static workloads with Meshery Server...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
@@ -148,6 +149,7 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
 	}
+	log.Info("Registered static components with Meshery Server.")
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
@@ -163,6 +165,7 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 func registerWorkloads(port string, log logger.Handler) {
 	//First we create and store any new components if available
+	log.Info("Registering latest components with Meshery Server")
 	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
@@ -204,7 +207,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		log.Info(err.Error())
 		return
 	}
-	log.Info("Successfully registered latest service mesh components with Meshery Server at ", mesheryServerAddress())
+	log.Info("Registered latest components for version ", version)
 }
 func resetWorkloadPath(orig string) {
 	oam.WorkloadPath = orig
