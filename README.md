@@ -1,9 +1,9 @@
 <p style="text-align:center;" align="center">
 <a href="https://layer5.io/meshery">
-<picture align="center">
-<source media="(prefers-color-scheme: dark)" srcset="./img/readme/meshery-logo-dark-text-side.svg" width="70%" align="center" style="margin-bottom:20px;">
-<source media="(prefers-color-scheme: light)" srcset="./img/readme/meshery-logo-light-text-side.svg" width="70%" align="center" style="margin-bottom:20px;">
- </picture>
+<picture align='center'>
+<img src="./img/readme/meshery-logo-dark-text-side.svg#gh-light-mode-only" width="70%" />
+<img src="./img/readme/meshery-logo-light-text-side.svg#gh-dark-mode-only" width="70%" />
+</picture>
 </a>
 
 <br/><br/></p>
