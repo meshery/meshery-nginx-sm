@@ -64,7 +64,7 @@ func init() {
 	if len(AllVersions) == 0 {
 		return
 	}
-	// @TODO need to update this, because NGINX changes how they relate the verison of the NGINX
+	// @TODO need to update this, because NGINX changes how they relate the version of the NGINX
 	// Service Mesh to the official release/branch which is v1.7.0 -> v0.7.0
 	// LatestVersion = AllVersions[len(AllVersions)-1]
 	LatestVersion = "0.7.0"
