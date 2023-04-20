@@ -93,7 +93,7 @@ func RegisterWorkloads(runtime, host string) error {
 // RegisterTraits will register all of the trait definitions
 // present in the path oam/traits
 //
-// Registeration process will send POST request to $runtime/api/oam/trait
+// registration process will send POST request to $runtime/api/oam/trait
 func RegisterTraits(runtime, host string) error {
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
 
@@ -182,7 +182,7 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 func init() {
 	_, err := load(WorkloadPath)
 	if err != nil {
-		fmt.Printf("Could not load definitions and schemas for static component registeration: %v", err.Error())
+		fmt.Printf("Could not load definitions and schemas for static component registration: %v", err.Error())
 		return
 	}
 }
