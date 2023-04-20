@@ -9,21 +9,16 @@ import (
 	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshery-nginx/internal/config"
 	"github.com/layer5io/meshkit/models/meshmodel/core/types"
 )
 
 var (
-	basePath, _ = os.Getwd()
-	//WorkloadPath is the path of workload definitions and schemas
-	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads")
+	basePath, _         = os.Getwd()
 	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
-	traitPath           = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
 // AvailableVersions denote the component versions available statically
 var AvailableVersions = map[string]bool{}
-var availableVersionGlobalMutex sync.Mutex
 
 type schemaDefinitionPathSet struct {
 	oamDefinitionPath string
@@ -56,69 +51,7 @@ func RegisterMeshModelComponents(uuid, runtime, host, port string) error {
 		Register(uuid)
 }
 
-// RegisterWorkloads will register all of the workload definitions
-// present in the path oam/workloads
-//
-// Registration process will send POST request to $runtime/api/oam/workload
-func RegisterWorkloads(runtime, host string) error {
-	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
-
-	pathSets, err := load(WorkloadPath)
-	if err != nil {
-		return err
-	}
-
-	for _, pathSet := range pathSets {
-		metadata := map[string]string{
-			config.OAMAdapterNameMetadataKey: config.NginxOperation,
-		}
-
-		if strings.HasSuffix(pathSet.name, "addon") {
-			metadata[config.OAMComponentCategoryMetadataKey] = "addon"
-		}
-
-		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: pathSet.oamDefinitionPath,
-			OAMRefSchemaPath: pathSet.jsonSchemaPath,
-			Host:             host,
-			Metadata:         metadata,
-		})
-	}
-
-	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/workload", runtime)).
-		Register()
-}
-
-// RegisterTraits will register all of the trait definitions
-// present in the path oam/traits
-//
-// registration process will send POST request to $runtime/api/oam/trait
-func RegisterTraits(runtime, host string) error {
-	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
-
-	pathSets, err := load(traitPath)
-	if err != nil {
-		return err
-	}
-
-	for _, pathSet := range pathSets {
-		metadata := map[string]string{
-			config.OAMAdapterNameMetadataKey: config.NginxOperation,
-		}
-
-		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: pathSet.oamDefinitionPath,
-			OAMRefSchemaPath: pathSet.jsonSchemaPath,
-			Host:             host,
-			Metadata:         metadata,
-		})
-	}
-
-	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/trait", runtime)).
-		Register()
-}
+var versionLock sync.Mutex
 
 func loadMeshmodelComponents(basepath string) ([]meshmodelDefinitionPathSet, error) {
 	res := []meshmodelDefinitionPathSet{}
@@ -134,9 +67,9 @@ func loadMeshmodelComponents(basepath string) ([]meshmodelDefinitionPathSet, err
 		res = append(res, meshmodelDefinitionPathSet{
 			meshmodelDefinitionPath: path,
 		})
-		availableVersionGlobalMutex.Lock()
+		versionLock.Lock()
 		AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
-		availableVersionGlobalMutex.Unlock()
+		versionLock.Unlock()
 		return nil
 	}); err != nil {
 		return nil, err
@@ -152,7 +85,6 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 		if err != nil {
 			return err
 		}
-
 		if info.IsDir() {
 			return nil
 		}
@@ -167,9 +99,9 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
 				name:              filepath.Base(nameWithPath),
 			})
-			availableVersionGlobalMutex.Lock()
-			AvailableVersions[filepath.Base(filepath.Dir(path))] = true
-			availableVersionGlobalMutex.Unlock()
+			versionLock.Lock()
+			AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
+			versionLock.Unlock()
 		}
 
 		return nil
@@ -178,11 +110,4 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	}
 
 	return res, nil
-}
-func init() {
-	_, err := load(WorkloadPath)
-	if err != nil {
-		fmt.Printf("Could not load definitions and schemas for static component registration: %v", err.Error())
-		return
-	}
 }
