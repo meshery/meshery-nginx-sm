@@ -1,10 +1,8 @@
 <p style="text-align:center;" align="center">
-<a href="https://layer5.io/meshery">
-<picture align="center">
-<img src="./img/readme/meshery-logo-dark-text-side.svg#gh-light-mode-only" width="70%" />
-<img src="./img/readme/meshery-logo-light-text-side.svg#gh-dark-mode-only" width="70%" />
-</picture>
-</a>
+<a href="https://layer5.io/meshery"><picture align="center"><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/meshery/meshery-ngix-sm/master/.github/readme/meshery-logo-light-text-side.svg">
+ <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/meshery/meshery-nginx-sm/.github/readme/images/meshery-logo-dark-text-side.svg">
+<img src="https://raw.githubusercontent.com/meshery/meshery-ngix-sm/master/.github/readme/meshery-logo-dark-text-side.svg"
+alt="Meshery Logo" width="70%" /></picture></a>
 </p>
 
 # Meshery Adapter for NGINX Service Mesh
@@ -29,13 +27,8 @@
 
 <p style="clear:both;">
 <h2><a href="https://layer5.io/meshery">Meshery</a></h2>
-<a href="https://meshery.io"><picture><img src="./img/readme/meshery-logo-light-text.svg#gh-dark-mode-only"
-style="margin:10px;" width="10%" 
-alt="Meshery - the Cloud Native Manager" align="left" />
-<img src="./img/readme/meshery-logo-dark-text.svg#gh-light-mode-only"
-style="margin:10px;" width="10%" 
-alt="Meshery - the Cloud Native Manager" align="left" /></picture></a>
-<a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
+<a href="https://meshery.io"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/meshery/meshery-ngix-sm/master/.github/readme/meshery-logo-light-text.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/meshery/meshery-ngix-sm/master/.github/readme/meshery-logo-dark-text.svg">
+<img src="https://raw.githubusercontent.com/meshery/meshery-ngix-sm/master/.github/readme/meshery-logo-dark-text.svg" alt="Meshery - the Cloud Native Manager" style="margin:10px;" width="10%" /></picture></a><a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
 <br /><br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
 </p>
 NGINX Service Mesh (NSM), a fully integrated lightweight service mesh that leverages a data plane powered by NGINX Plus to manage container traffic in Kubernetes environments. 
