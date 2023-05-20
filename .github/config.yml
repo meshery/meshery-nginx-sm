@@ -18,9 +18,9 @@ firstPRMergeComment: >
   Thanks for your contribution to Meshery! :tada:
    
  <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/94157520/231786445-45bf80c4-d214-40ab-a98f-c7a5f42015c5.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/94157520/231786474-cafb4373-52ee-4b02-b06e-87376721c74a.svg">
-  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="https://user-images.githubusercontent.com/94157520/231786474-cafb4373-52ee-4b02-b06e-87376721c74a.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/meshery/meshery-nginx-sm/30d4ad62a0bd9dc6882cd43b99123a87da1e533b/.github/welcome/Meshery-celebration-Dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/meshery/meshery-nginx-sm/30d4ad62a0bd9dc6882cd43b99123a87da1e533b/.github/welcome/Meshery-celebration-Light.svg">
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode." >
  </picture>
 
 
