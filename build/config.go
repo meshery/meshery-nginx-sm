@@ -17,7 +17,6 @@ import (
 var DefaultGenerationMethod string
 var DefaultGenerationURL string
 var LatestVersion string
-var WorkloadPath string
 var MeshModelPath string
 var AllVersions []string
 
@@ -26,8 +25,7 @@ const Component = "NGINX Service Mesh"
 var Meshmodelmetadata = make(map[string]interface{})
 
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
-	Category:    "Orchestration & Management",
-	SubCategory: "Service Mesh",
+	Category: "Cloud Native Network",
 	Metadata:    Meshmodelmetadata,
 }
 
@@ -35,7 +33,6 @@ var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 func NewConfig(version string) manifests.Config {
 	return manifests.Config{
 		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
-		Type:        Component,
 		MeshVersion: version,
 		CrdFilter: manifests.NewCueCrdFilter(manifests.ExtractorPaths{
 			NamePath:    "spec.names.kind",
@@ -61,7 +58,6 @@ func init() {
 
 	_ = json.Unmarshal(byt, &Meshmodelmetadata)
 	wd, _ := os.Getwd()
-	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("nginxinc", "nginx-service-mesh")
 	if len(AllVersions) == 0 {
@@ -69,5 +65,6 @@ func init() {
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.HelmCHARTS
-	DefaultGenerationURL = "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + LatestVersion + ".tgz?raw=true"
+	strippedVersion := strings.TrimPrefix(LatestVersion, "v") // converts v1.0.0 to 1.0.0
+	DefaultGenerationURL = "https://github.com/nginxinc/helm-charts/blob/master/stable/nginx-service-mesh-" + strippedVersion + ".tgz?raw=true"
 }
