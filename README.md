@@ -12,8 +12,7 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-nginx-sm.svg)](https://hub.docker.com/r/layer5/meshery-nginx-sm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-nginx-sm)](https://goreportcard.com/report/github.com/layer5io/meshery-nginx-sm)
-<a href="https://github.com/meshery/meshery-istio/actions" alt="Build Status">
-<img src="https://img.shields.io/github/workflow/status/meshery/meshery-nginx-sm/Meshery%20Adapter%20for%20NGINX%20Build%20and%20Releaser" /></a>
+[![Build Status](https://img.shields.io/github/actions/workflow/status/meshery/meshery-nginx-sm/multi-platform.yml?branch=master)](https://github.com/meshery/meshery-nginx-sm/actions)
 [![GitHub](https://img.shields.io/github/license/layer5io/meshery-nginx-sm.svg)](https://github.com/layer5io/meshery-nginx-sm/blob/master/LICENSE)
 [![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-nginx-sm/help%20wanted.svg)](https://github.com/layer5io/meshery-nginx-sm/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery)
