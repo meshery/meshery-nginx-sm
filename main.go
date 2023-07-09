@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -42,7 +41,8 @@ func init() {
 func main() {
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
-		Format: logger.SyslogLogFormat,
+		Format:     logger.SyslogLogFormat,
+		DebugLevel: isDebug(),
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -97,8 +97,8 @@ func main() {
 	service.Version = version
 	service.GitSHA = gitsha
 
-	go registerCapabilities(service.Port, log)        //Registering static capabilities
-	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
+	go registerCapabilities(service.Port, log)            //Registering static capabilities
+	go registerCapabilitiesDynamically(service.Port, log) //Registering latest capabilities periodically
 
 	// Server Initialization
 	log.Info("Adapter Listening at port: ", service.Port)
@@ -107,6 +107,10 @@ func main() {
 		log.Error(err)
 		os.Exit(1)
 	}
+}
+
+func isDebug() bool {
+	return os.Getenv("DEBUG") == "true"
 }
 
 func mesheryServerAddress() string {
@@ -134,25 +138,14 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
-	// Register workloads
-	log.Info("Registering static workloads with Meshery Server...")
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
+	err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port)
+	if err != nil {
+		log.Error(err)
 	}
-
-	// Register traits
-	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
-	// Register meshmodel components
-	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
-		log.Info(err.Error())
-	}
-	log.Info("Registered static components with Meshery Server.")
+	log.Info("Successfully registered static components with Meshery Server.")
 }
 
-func registerDynamicCapabilities(port string, log logger.Handler) {
+func registerCapabilitiesDynamically(port string, log logger.Handler) {
 	registerWorkloads(port, log)
 	//Start the ticker
 	const reRegisterAfter = 24
@@ -164,14 +157,15 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 }
 
 func registerWorkloads(port string, log logger.Handler) {
-	//First we create and store any new components if available
 	log.Info("Registering latest components with Meshery Server")
+
+	//First we create and store any new components if available
 	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
 	// Prechecking to skip comp gen
 	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
-		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
+		log.Info("Components available statically for version ", version, ". Skipping dynamic component registration")
 		return
 	}
 	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
@@ -181,34 +175,38 @@ func registerWorkloads(port string, log logger.Handler) {
 		gm = os.Getenv("COMP_GEN_METHOD")
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
 	}
+
 	log.Info("Registering latest workload components for version ", version)
-	// Register workloads
-	if err := adapter.CreateComponents(adapter.StaticCompConfig{
+	err := adapter.CreateComponents(adapter.StaticCompConfig{
 		URL:             url,
 		Method:          gm,
-		OAMPath:         build.WorkloadPath,
 		MeshModelPath:   build.MeshModelPath,
 		MeshModelConfig: build.MeshModelConfig,
 		DirName:         version,
 		Config:          build.NewConfig(version),
-	}); err != nil {
-		log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
+	})
+	if err != nil {
+		log.Info("Failed to generate components for version " + version)
+		log.Error(err)
 		return
 	}
+	// err := adapter.CreateComponents(adapter.StaticCompConfig{
+	// 	URL:             url,
+	// 	Method:          gm,
+	// 	MeshModelPath:   build.MeshModelPath,
+	// 	MeshModelConfig: build.MeshModelConfig,
+	// 	DirName:         version,
+	// 	Config:          build.NewConfig(version),
+	// })
+
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component creation completed for version ", version)
 
 	//Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version ", version)
-	originalPath := oam.WorkloadPath
-	oam.WorkloadPath = filepath.Join(originalPath, version)
-	defer resetWorkloadPath(originalPath)
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
+		log.Error(err)
 		return
 	}
-	log.Info("Registered latest components for version ", version)
-}
-func resetWorkloadPath(orig string) {
-	oam.WorkloadPath = orig
+	log.Info("Latest workload components successfully registered for version ", version)
 }
