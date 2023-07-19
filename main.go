@@ -132,6 +132,8 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
+	log.Info("Registering static components with Meshery Server.")
+
 	// Register meshmodel components
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
@@ -193,7 +195,4 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 	log.Info("Latest workload components successfully registered for version ", version)
-}
-func resetWorkloadPath(orig string) {
-	oam.WorkloadPath = orig
 }
