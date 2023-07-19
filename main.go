@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/layer5io/meshery-nginx/nginx/oam"
 	"github.com/layer5io/meshkit/logger"
 
-	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
@@ -134,17 +132,6 @@ func serviceAddress() string {
 }
 
 func registerCapabilities(port string, log logger.Handler) {
-	// Register workloads
-	log.Info("Registering static workloads with Meshery Server...")
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
-	// Register traits
-	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
-	}
-
 	// Register meshmodel components
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
@@ -186,7 +173,6 @@ func registerWorkloads(port string, log logger.Handler) {
 	if err := adapter.CreateComponents(adapter.StaticCompConfig{
 		URL:             url,
 		Method:          gm,
-		OAMPath:         build.WorkloadPath,
 		MeshModelPath:   build.MeshModelPath,
 		MeshModelConfig: build.MeshModelConfig,
 		DirName:         version,
@@ -200,14 +186,13 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	//Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version ", version)
-	originalPath := oam.WorkloadPath
-	oam.WorkloadPath = filepath.Join(originalPath, version)
-	defer resetWorkloadPath(originalPath)
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+	   
+	
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
 		return
 	}
-	log.Info("Registered latest components for version ", version)
+	log.Info("Latest workload components successfully registered for version ", version)
 }
 func resetWorkloadPath(orig string) {
 	oam.WorkloadPath = orig
