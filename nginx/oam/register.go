@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	basePath, _ = os.Getwd()
+	basePath, _         = os.Getwd()
 	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
 )
 

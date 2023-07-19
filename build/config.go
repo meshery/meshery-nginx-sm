@@ -24,7 +24,7 @@ const Component = "NGINX Service Mesh"
 
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 	Category: "Cloud Native Network",
-	Metadata:    map[string]interface{}{},
+	Metadata: map[string]interface{}{},
 }
 
 // NewConfig creates the configuration for creating components

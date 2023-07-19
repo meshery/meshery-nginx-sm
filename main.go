@@ -188,8 +188,7 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	//Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version ", version)
-	   
-	
+
 	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
 		log.Info(err.Error())
 		return
