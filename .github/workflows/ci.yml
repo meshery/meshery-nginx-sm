@@ -13,10 +13,10 @@ jobs:
     name: Check & Review code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
-          go-version: 1.19
-      - uses: actions/checkout@v3
+          go-version: 1.21
+      - uses: actions/checkout@v4
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
@@ -36,26 +36,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version: 1.21
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go install github.com/kisielk/errcheck@latest; /home/runner/go/bin/errcheck -tags draft ./...
   static_check:
     name: Static check
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version: 1.21
       - uses: dominikh/staticcheck-action@v1.2.0
         with:
           install-go: false
@@ -65,13 +65,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version: 1.21
       - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
   sec_check:
     name: Security check
@@ -80,7 +80,7 @@ jobs:
       GO111MODULE: on
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Run Gosec Security Scanner
@@ -95,13 +95,13 @@ jobs:
        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
      steps:
      - name: Check out code
-       uses: actions/checkout@v3
+       uses: actions/checkout@v4
        with:
         fetch-depth: 1
      - name: Setup Go
-       uses: actions/setup-go@v3
+       uses: actions/setup-go@v4
        with:
-        go-version: 1.19
+        go-version: 1.21
      - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.5.0
        with:
