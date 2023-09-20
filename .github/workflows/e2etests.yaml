@@ -38,7 +38,7 @@ jobs:
            yq e -i '.services.nginx.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: patternfile
           path: ./.github/install/deploy.yaml 
