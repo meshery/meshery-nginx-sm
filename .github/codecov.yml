@@ -1,0 +1,21 @@
+codecov:
+    require_ci_to_pass: yes
+
+github_checks:
+    annotations: true #Annotations to pr's
+coverage:
+    precison: 2 #rounds off results to  to 2dp
+    round: up
+    status:
+        patch: true
+        project:
+            nginxbackend:
+                flags:
+                    - unittests
+
+flags:
+    nginxbackend:
+        paths:
+            - "*/build/**"
+            - "*/nginx/**"
+            - "*/internal/**"
