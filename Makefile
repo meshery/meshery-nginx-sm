@@ -8,6 +8,8 @@ docker-run:
 	-e DEBUG=true \
 	layer5/meshery-nginx-sm
 
+test:
+	go test --short ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 ## Build and run Adapter locally
 run:
